@@ -1,0 +1,50 @@
+paths:
+  data_root: data
+  raw: data/raw
+  processed: data/processed
+  figures: reports/figures
+
+plot:
+  bubble_width: 10
+  bubble_height: 7
+  dpi: 300
+
+# Generic Prong 1 EHR trajectory pipeline (cohort-agnostic).
+# Paths are relative to the project root unless absolute.
+prong1:
+  participants_file: data/raw/dummy/participants.csv
+  diagnoses_file: data/raw/dummy/diagnoses.csv
+  disease_dictionary_file: data/raw/dummy/disease_dictionary.csv
+  column_map_file: config/prong1_column_map.yaml
+  prepared_dir: data/processed/prong1_input
+  output_dir: data/processed/prong1_trajectories
+  censor_date: "2022-12-30"
+  # Biobank-scale defaults
+  n_patient_min: 100
+  min_comorbid_overlap: 20
+  match_ratio: 10
+  assessment_year_caliper: 3
+  prefilter_fdr: 0.05
+  rr_fdr: 0.05
+  direction_fdr: 0.05
+  pair_scope: disease_oi
+  exclude_d1_letters:
+    - R
+    - Z
+  disease_oi:
+    - C18
+    - C19
+    - C20
+    - C22
+    - C25
+    - C34
+    - C43
+    - C50
+    - C53
+    - C54
+    - C55
+    - C56
+    - C61
+    - C62
+    - C64
+    - C67

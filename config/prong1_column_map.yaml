@@ -1,0 +1,21 @@
+# Demo map: dummy CSVs use non-canonical names on purpose.
+# Point each canonical field at your source column name.
+
+participants:
+  person_id: patient_uid
+  sex: gender
+  age_at_baseline: age_years
+  baseline_date: enroll_date
+  assessment_centre: clinic_site
+  ethnicity: ancestry
+  death_date: dod
+  lost_to_followup_date: exit_date
+
+diagnoses:
+  person_id: patient_uid
+  icd10: diagnosis_code
+  diagnosis_date: onset_date
+
+disease_dictionary:
+  icd10: code
+  disease_name: label

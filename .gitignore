@@ -1,0 +1,24 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.DS_Store
+renv/library/
+renv/local/
+renv/cellar/
+renv/lock/
+renv/python/
+renv/sandbox/
+renv/staging/
+
+# Generated demo EHR (recreate with scripts/00_generate_dummy_data.R)
+data/raw/dummy/*.csv
+data/raw/dummy/*.json
+
+# Pipeline outputs
+data/processed/prong1_input/*
+!data/processed/prong1_input/.gitkeep
+data/processed/prong1_trajectories/*
+!data/processed/prong1_trajectories/.gitkeep
+reports/figures/*
+!reports/figures/.gitkeep

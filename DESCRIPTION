@@ -1,0 +1,18 @@
+Package: EarlyTProng1
+Title: Educational Prong 1 Disease-to-Cancer Trajectory Pipeline
+Version: 0.1.0
+Description: Cohort-agnostic R workflow to prepare EHR tables, estimate
+    matched relative-risk disease-to-cancer trajectories, and plot RR versus
+    mean diagnosis lag. Includes a seeded dummy-data generator for testing.
+License: MIT + file LICENSE
+Depends: R (>= 4.2.0)
+Imports:
+    dplyr,
+    readr,
+    yaml,
+    jsonlite,
+    stringr,
+    MatchIt,
+    ggplot2,
+    ggrepel
+Encoding: UTF-8
