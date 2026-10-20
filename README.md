@@ -1,4 +1,4 @@
-# EarlyT Prong 1 — educational trajectory pipeline
+# EarlyT Prong 1 — cancer trajectories pipeline
 
 Self-contained **R** tutorial for Prong 1: turn EHR-style tables into disease→cancer relative-risk trajectories and a bubble plot of **log2(RR) vs mean lag years**.
 
@@ -10,7 +10,7 @@ This repository is intentionally small. It does **not** include the original UK 
 00 generate dummy EHR  →  01 prepare/validate  →  02 RR + directionality  →  03 bubble plot
 ```
 
-Dummy CSVs use **non-default column names** on purpose. [`config/prong1_column_map.yaml`](config/prong1_column_map.yaml) shows how to remap them to the canonical schema.
+Dummy CSVs, plays a role of EHR, and use **non-default column names** on purpose. [`config/prong1_column_map.yaml`](config/prong1_column_map.yaml) shows how to remap them to the canonical schema. 
 
 ## Requirements
 
@@ -45,11 +45,11 @@ Rscript --vanilla scripts/00_generate_dummy_data.R --seed 42
 # 1) Map columns, normalize ICD-10 level-3, earliest diagnosis dates
 Rscript --vanilla scripts/01_prepare_prong1_input.R
 
-# 2) Prefilter → MatchIt RR → directionality (biobank-scale thresholds)
+# 2) Prefilter → MatchIt RR → directionality 
 #    Expect several minutes on a laptop.
 Rscript --vanilla scripts/02_run_prong1_trajectories.R
 
-# 3) Bubble plot: mean lag years (x) vs log2(RR) (y)
+# 3) Bubble plot: mean lag years (x) vs log2(RR) (y) to recreate a plot like in the paper
 Rscript --vanilla scripts/03_plot_prong1_rr_bubble.R
 ```
 
@@ -90,7 +90,7 @@ Edit [`config/prong1_column_map.yaml`](config/prong1_column_map.yaml) when point
 
 [`config/config.yaml`](config/config.yaml) `prong1:` block controls paths, censor date, size filters, MatchIt settings, FDR thresholds, end cancers (`disease_oi`), and D1 chapter exclusions (`R`, `Z`).
 
-For a real cohort, change:
+For a real cohort from your EHR, change:
 
 ```yaml
 prong1:

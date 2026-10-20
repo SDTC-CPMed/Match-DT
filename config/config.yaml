@@ -19,7 +19,7 @@ prong1:
   prepared_dir: data/processed/prong1_input
   output_dir: data/processed/prong1_trajectories
   censor_date: "2022-12-30"
-  # Biobank-scale defaults
+  # UKBiobank-scale defaults
   n_patient_min: 100
   min_comorbid_overlap: 20
   match_ratio: 10
