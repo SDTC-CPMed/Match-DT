@@ -7,6 +7,7 @@ suppressPackageStartupMessages({
   library(readr)
 })
 
+# Map D1 ICD letter to trajectory category for coloring.
 prong1_trajectory_type <- function(d1) {
   dplyr::case_when(
     grepl("^C", d1) ~ "Cancer-to-Cancer",
@@ -40,12 +41,14 @@ prong1_plot_rr_bubble <- function(
     stop("Final_trajectories.csv is empty — no directed trajectories to plot.")
   }
 
+  # "sans" is the device standard font (Helvetica in pdf()). Its encoding has
+  # no arrow or unicode minus, so labels use ASCII "->" and "-".
   plot_df <- df %>%
     mutate(
       years = as.numeric(mean_lag_years_directed),
       log2_rr = log2(as.numeric(RR)),
       type = prong1_trajectory_type(D1),
-      label = paste0(D1, "→", D2)
+      label = paste0(D1, "->", D2)
     ) %>%
     filter(is.finite(years), is.finite(log2_rr))
 
@@ -53,26 +56,30 @@ prong1_plot_rr_bubble <- function(
     stop("No finite years/RR rows available for plotting.")
   }
 
+  # Colorblind-friendly palette by trajectory type.
   type_colors <- c(
     "Benign-to-Cancer" = "#0072B2",
     "Cancer-to-Cancer" = "#009E73",
     "Non-Neoplastic-Disease-to-Cancer" = "#E69F00"
   )
 
+  # Bubble size encodes log2(RR); labels placed with ggrepel to reduce overlap.
   p <- ggplot(plot_df, aes(x = years, y = log2_rr, size = log2_rr, color = type, label = label)) +
     geom_point(alpha = 0.75) +
     geom_hline(yintercept = 0, linetype = "dashed", color = "grey60") +
     geom_vline(xintercept = 0, linetype = "dotted", color = "grey60") +
-    ggrepel::geom_text_repel(size = 3.2, max.overlaps = 20, show.legend = FALSE) +
+    ggrepel::geom_text_repel(
+      size = 3.2, max.overlaps = 20, family = "sans", show.legend = FALSE
+    ) +
     scale_size_continuous(range = c(3, 12), guide = "none") +
     scale_color_manual(values = type_colors, drop = FALSE) +
     labs(
-      x = "Mean time D2 − D1 (years)",
+      x = "Mean time D2 - D1 (years)",
       y = "Relative risk (log2)",
       color = NULL,
       title = "Prong 1 directed trajectories"
     ) +
-    theme_classic(base_size = 12) +
+    theme_classic(base_size = 12, base_family = "sans") +
     theme(panel.grid.minor = element_blank(), legend.position = "bottom")
 
   dir.create(dirname(output_png), recursive = TRUE, showWarnings = FALSE)

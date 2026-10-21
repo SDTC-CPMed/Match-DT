@@ -9,6 +9,7 @@ suppressPackageStartupMessages({
   library(stringr)
 })
 
+# Walk up from cwd until config/config.yaml is found (project root marker).
 prong1_project_root <- function(start = getwd()) {
   path <- normalizePath(start, mustWork = TRUE)
   for (i in seq_len(12)) {
@@ -22,6 +23,7 @@ prong1_project_root <- function(start = getwd()) {
   stop("Could not locate project root (missing config/config.yaml).")
 }
 
+# Load YAML config and attach absolute project_root for path resolution.
 prong1_load_config <- function(project_root = NULL) {
   if (is.null(project_root)) project_root <- prong1_project_root()
   cfg_path <- file.path(project_root, "config", "config.yaml")
@@ -33,12 +35,15 @@ prong1_load_config <- function(project_root = NULL) {
   cfg
 }
 
+# Absolute paths pass through; relative paths are joined to project_root.
 prong1_resolve_path <- function(path, project_root) {
   if (is.null(path) || !nzchar(path)) return(NULL)
   if (grepl("^(/|[A-Za-z]:)", path)) return(path)
   file.path(project_root, path)
 }
 
+# Canonical ← source column map. Missing map file → identity (already canonical).
+# User YAML overrides only keys it sets; other defaults are kept.
 prong1_load_column_map <- function(map_path) {
   default_map <- list(
     participants = list(
@@ -77,6 +82,7 @@ prong1_load_column_map <- function(map_path) {
   default_map
 }
 
+# Read CSV / TSV / RDS into a plain data.frame.
 prong1_read_table <- function(path) {
   if (is.null(path) || !file.exists(path)) {
     stop("Input file not found: ", path)
@@ -91,6 +97,7 @@ prong1_read_table <- function(path) {
   as.data.frame(readr::read_csv(path, show_col_types = FALSE), stringsAsFactors = FALSE)
 }
 
+# Select mapped source columns and rename them to canonical names.
 prong1_rename_mapped <- function(df, mapping) {
   missing <- setdiff(unlist(mapping, use.names = FALSE), names(df))
   if (length(missing) > 0) {
@@ -101,6 +108,7 @@ prong1_rename_mapped <- function(df, mapping) {
   out
 }
 
+# Parse dates; try ISO first, then DD/MM/YYYY for stubborn cells.
 prong1_parse_date <- function(x) {
   if (inherits(x, "Date")) return(x)
   if (inherits(x, "POSIXt")) return(as.Date(x))
@@ -114,6 +122,7 @@ prong1_parse_date <- function(x) {
   parsed
 }
 
+# Collapse common sex encodings (M/F, 0/1, male/female, …) to male/female.
 prong1_normalize_sex <- function(x) {
   s <- tolower(trimws(as.character(x)))
   out <- rep(NA_character_, length(s))
@@ -122,12 +131,14 @@ prong1_normalize_sex <- function(x) {
   out
 }
 
+# Strip non-alphanumerics and keep first 3 chars (ICD-10 level 3, e.g. I10.9 → I10).
 prong1_normalize_icd10_level3 <- function(x) {
   cleaned <- toupper(gsub("[^A-Za-z0-9]", "", as.character(x)))
   cleaned[nchar(cleaned) < 3] <- NA_character_
   substr(cleaned, 1, 3)
 }
 
+# Decade age bands used for matching covariates.
 prong1_age_band <- function(age) {
   dplyr::case_when(
     is.na(age) ~ NA_character_,
@@ -141,6 +152,7 @@ prong1_age_band <- function(age) {
   )
 }
 
+# Make disease labels filesystem- and TSV-friendly.
 prong1_sanitize_disease_name <- function(x) {
   x <- gsub("[ ,/&]", "_", as.character(x))
   x <- gsub("[()'\\.;]", "", x)
@@ -161,6 +173,7 @@ prong1_prepare_input <- function(
 ) {
   col_map <- prong1_load_column_map(column_map_path)
 
+  # Raw loads + rename to canonical column names via the map.
   participants_raw <- prong1_read_table(participants_path)
   diagnoses_raw <- prong1_read_table(diagnoses_path)
 
@@ -170,6 +183,7 @@ prong1_prepare_input <- function(
   participants <- prong1_rename_mapped(participants_raw, col_map$participants)
   diagnoses <- prong1_rename_mapped(diagnoses_raw, col_map$diagnoses)
 
+  # Type / normalize participant fields.
   participants <- participants %>%
     mutate(
       person_id = as.character(person_id),
@@ -182,15 +196,18 @@ prong1_prepare_input <- function(
       lost_to_followup_date = prong1_parse_date(lost_to_followup_date)
     )
 
+  # Keep one row per person_id (first occurrence).
   n_dup_id <- sum(duplicated(participants$person_id))
   participants <- participants %>% filter(!duplicated(person_id))
 
+  # Count drop reasons before filtering (for the prep report).
   drop_sex <- sum(is.na(participants$sex))
   drop_age <- sum(is.na(participants$age_at_baseline))
   drop_baseline <- sum(is.na(participants$baseline_date))
   drop_centre <- sum(is.na(participants$assessment_centre) | participants$assessment_centre == "")
   drop_eth <- sum(is.na(participants$ethnicity) | participants$ethnicity == "")
 
+  # Require complete matching covariates; derive year + age_band factors.
   participants <- participants %>%
     filter(
       !is.na(sex),
@@ -210,6 +227,7 @@ prong1_prepare_input <- function(
       ethnicity = as.factor(ethnicity)
     )
 
+  # Diagnoses: level-3 ICD + valid dates only; drop orphan person_ids.
   diagnoses <- diagnoses %>%
     mutate(
       person_id = as.character(person_id),
@@ -224,10 +242,12 @@ prong1_prepare_input <- function(
   n_diag_orphans <- sum(!(diagnoses$person_id %in% participants$person_id))
   diagnoses <- diagnoses %>% filter(person_id %in% participants$person_id)
 
+  # Earliest onset per (person, ICD) — one row for trajectory timing.
   diagnoses_earliest <- diagnoses %>%
     group_by(person_id, icd10) %>%
     summarise(diagnosis_date = min(diagnosis_date, na.rm = TRUE), .groups = "drop")
 
+  # Optional dictionary for human-readable disease names.
   dictionary <- NULL
   if (!is.null(dictionary_path) && file.exists(dictionary_path)) {
     dictionary_raw <- prong1_read_table(dictionary_path)
@@ -240,6 +260,7 @@ prong1_prepare_input <- function(
       distinct(icd10, .keep_all = TRUE)
   }
 
+  # Per-code patient counts; fill names from dictionary when available.
   disease_n_patient <- diagnoses_earliest %>%
     count(icd10, name = "n_patients") %>%
     mutate(disease_name = icd10)
@@ -256,6 +277,7 @@ prong1_prepare_input <- function(
 
   n_diseases_ge_min <- sum(disease_n_patient$n_patients >= n_patient_min)
 
+  # QC summary written alongside outputs.
   report <- list(
     n_participants_in = n_part_in,
     n_participants_out = nrow(participants),
@@ -293,6 +315,7 @@ prong1_prepare_input <- function(
   )
 }
 
+# Console checklist so the next pipeline step is obvious.
 prong1_print_prep_checklist <- function(report, output_dir) {
   message("Prong 1 prep checklist")
   message("  participants: ", report$n_participants_in, " -> ", report$n_participants_out)

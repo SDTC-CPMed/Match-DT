@@ -2,29 +2,46 @@
 # Generate seeded dummy EHR tables with non-canonical column names.
 #
 # Usage (from project root):
-#   Rscript --vanilla scripts/00_generate_dummy_data.R
+#   Rscript --vanilla scripts/00_generate_dummy_data.R --help
 #   Rscript --vanilla scripts/00_generate_dummy_data.R --seed 42 --n 30000
 
-args <- commandArgs(trailingOnly = TRUE)
+suppressPackageStartupMessages(library(optparse))
 
-parse_args <- function(args) {
-  out <- list(seed = 42L, n = 30000L, output_dir = NULL)
-  i <- 1L
-  while (i <= length(args)) {
-    key <- args[[i]]
-    if (!startsWith(key, "--") || i == length(args)) stop("Unexpected argument: ", key)
-    val <- args[[i + 1L]]
-    if (key == "--seed") out$seed <- as.integer(val)
-    else if (key == "--n") out$n <- as.integer(val)
-    else if (key == "--output-dir") out$output_dir <- val
-    else stop("Unknown flag: ", key)
-    i <- i + 2L
-  }
-  out
+# Optional overrides. --output-dir NULL means data/raw/dummy under the project root.
+option_list <- list(
+  make_option(
+    "--seed", type = "integer", default = 42L,
+    help = "RNG seed [default %default]"
+  ),
+  make_option(
+    "--n", type = "integer", default = 30000L,
+    help = "Number of participants [default %default]"
+  ),
+  make_option(
+    "--output-dir", type = "character", default = NULL,
+    help = "Output directory (default: data/raw/dummy)"
+  )
+)
+
+# convert_hyphens_to_underscores: --output-dir becomes opt$output_dir.
+opt <- parse_args(
+  OptionParser(
+    usage = "Rscript --vanilla scripts/00_generate_dummy_data.R [options]",
+    description = "Generate seeded dummy EHR tables with non-canonical column names.",
+    option_list = option_list
+  ),
+  convert_hyphens_to_underscores = TRUE
+)
+
+# optparse warns and keeps a non-integer string; stop before generating data.
+if (!is.integer(opt$seed) || is.na(opt$seed)) {
+  stop("--seed must be an integer.", call. = FALSE)
+}
+if (!is.integer(opt$n) || is.na(opt$n) || opt$n < 1L) {
+  stop("--n must be a positive integer.", call. = FALSE)
 }
 
-cli <- parse_args(args)
-
+# When launched via Rscript, cd to the repo root (parent of scripts/).
 script_path <- local({
   ca <- commandArgs(trailingOnly = FALSE)
   f <- sub("^--file=", "", ca[startsWith(ca, "--file=")])
@@ -38,15 +55,16 @@ source(file.path("src", "prong1", "prepare_input.R"))
 source(file.path("src", "prong1", "generate_dummy.R"))
 
 cfg <- prong1_load_config()
-output_dir <- if (!is.null(cli$output_dir)) {
-  prong1_resolve_path(cli$output_dir, cfg$project_root)
+# Prefer CLI output dir; otherwise write under data/raw/dummy.
+output_dir <- if (!is.null(opt$output_dir)) {
+  prong1_resolve_path(opt$output_dir, cfg$project_root)
 } else {
   file.path(cfg$project_root, "data", "raw", "dummy")
 }
 
 prong1_generate_dummy_data(
-  n_participants = cli$n,
-  seed = cli$seed,
+  n_participants = opt$n,
+  seed = opt$seed,
   output_dir = output_dir,
   censor_date = as.Date(cfg$prong1$censor_date)
 )

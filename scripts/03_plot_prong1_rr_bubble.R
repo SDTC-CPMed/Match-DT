@@ -2,28 +2,31 @@
 # Plot log2(RR) vs mean directed lag years for significant trajectories.
 #
 # Usage (from project root):
-#   Rscript --vanilla scripts/03_plot_prong1_rr_bubble.R
+#   Rscript --vanilla scripts/03_plot_prong1_rr_bubble.R --help
 
-args <- commandArgs(trailingOnly = TRUE)
+suppressPackageStartupMessages(library(optparse))
 
-parse_args <- function(args) {
-  out <- list(input = NULL, output_png = NULL, output_pdf = NULL)
-  i <- 1L
-  while (i <= length(args)) {
-    key <- args[[i]]
-    if (!startsWith(key, "--") || i == length(args)) stop("Unexpected argument: ", key)
-    val <- args[[i + 1L]]
-    if (key == "--input") out$input <- val
-    else if (key == "--output-png") out$output_png <- val
-    else if (key == "--output-pdf") out$output_pdf <- val
-    else stop("Unknown flag: ", key)
-    i <- i + 2L
-  }
-  out
-}
+# Optional CLI: --input, --output-png, --output-pdf.
+option_list <- list(
+  make_option("--input", type = "character", default = NULL,
+              help = "Final_trajectories.csv (default: analysis output dir)"),
+  make_option("--output-png", type = "character", default = NULL,
+              help = "PNG path (default: reports/figures/prong1_rr_vs_years_bubble.png)"),
+  make_option("--output-pdf", type = "character", default = NULL,
+              help = "PDF path (default: reports/figures/prong1_rr_vs_years_bubble.pdf)")
+)
 
-cli <- parse_args(args)
+# convert_hyphens_to_underscores: --output-png becomes opt$output_png.
+opt <- parse_args(
+  OptionParser(
+    usage = "Rscript --vanilla scripts/03_plot_prong1_rr_bubble.R [options]",
+    description = "Plot log2(RR) against mean directed lag years.",
+    option_list = option_list
+  ),
+  convert_hyphens_to_underscores = TRUE
+)
 
+# When launched via Rscript, cd to the repo root (parent of scripts/).
 script_path <- local({
   ca <- commandArgs(trailingOnly = FALSE)
   f <- sub("^--file=", "", ca[startsWith(ca, "--file=")])
@@ -41,16 +44,17 @@ root <- cfg$project_root
 p1 <- cfg$prong1
 plot_cfg <- cfg$plot
 
+# Defaults: Final_trajectories.csv from analysis output, figures under reports/.
 finals_path <- prong1_resolve_path(
-  if (!is.null(cli$input)) cli$input else file.path(p1$output_dir, "Final_trajectories.csv"),
+  if (!is.null(opt$input)) opt$input else file.path(p1$output_dir, "Final_trajectories.csv"),
   root
 )
 output_png <- prong1_resolve_path(
-  if (!is.null(cli$output_png)) cli$output_png else "reports/figures/prong1_rr_vs_years_bubble.png",
+  if (!is.null(opt$output_png)) opt$output_png else "reports/figures/prong1_rr_vs_years_bubble.png",
   root
 )
 output_pdf <- prong1_resolve_path(
-  if (!is.null(cli$output_pdf)) cli$output_pdf else "reports/figures/prong1_rr_vs_years_bubble.pdf",
+  if (!is.null(opt$output_pdf)) opt$output_pdf else "reports/figures/prong1_rr_vs_years_bubble.pdf",
   root
 )
 

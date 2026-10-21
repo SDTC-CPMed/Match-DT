@@ -29,7 +29,7 @@ install.packages(c(
 Or from the project root:
 
 ```bash
-Rscript --vanilla -e 'install.packages(c("dplyr","readr","yaml","jsonlite","stringr","MatchIt","ggplot2","ggrepel"), repos="https://cloud.r-project.org")'
+Rscript --vanilla -e 'install.packages(c("dplyr","readr","yaml","jsonlite","stringr","MatchIt","ggplot2","ggrepel","optparse"), repos="https://cloud.r-project.org")'
 ```
 
 Use `Rscript --vanilla …` if a project-level `renv` setup gets in the way.
@@ -52,6 +52,8 @@ Rscript --vanilla scripts/02_run_prong1_trajectories.R
 # 3) Bubble plot: mean lag years (x) vs log2(RR) (y) to recreate a plot like in the paper
 Rscript --vanilla scripts/03_plot_prong1_rr_bubble.R
 ```
+
+Each script accepts `--help` for its flags. Omitted path flags fall back to `config/config.yaml`.
 
 ### Expected outputs
 

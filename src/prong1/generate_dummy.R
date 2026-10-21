@@ -19,19 +19,24 @@ prong1_generate_dummy_data <- function(
     output_dir = "data/raw/dummy",
     censor_date = as.Date("2022-12-30")
 ) {
+  # Fix RNG so re-runs produce the same cohort and diagnosis pattern.
   set.seed(as.integer(seed))
   dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 
+  # Site and ancestry labels used as categorical covariates.
   sites <- c("site_north", "site_south", "site_east", "site_west", "site_central")
   ancestry <- c("group_A", "group_B", "group_C")
 
+  # Enrollment window: every participant joins sometime in 2006–2010.
   enroll_start <- as.Date("2006-01-01")
   enroll_end <- as.Date("2010-12-31")
   enroll_span <- as.integer(enroll_end - enroll_start)
 
+  # Core demographics table (non-canonical names on purpose).
   participants <- data.frame(
     patient_uid = sprintf("P%05d", seq_len(n_participants)),
     gender = sample(c("M", "F"), n_participants, replace = TRUE),
+    # Ages centered ~55, clipped to a mid-life range [40, 69].
     age_years = pmin(69, pmax(40, round(rnorm(n_participants, mean = 55, sd = 7)))),
     enroll_date = enroll_start + sample.int(enroll_span + 1L, n_participants, replace = TRUE) - 1L,
     clinic_site = sample(sites, n_participants, replace = TRUE),
@@ -41,11 +46,13 @@ prong1_generate_dummy_data <- function(
     stringsAsFactors = FALSE
   )
 
+  # ~4% die before censoring; death date is after enrollment, capped at censor_date.
   death_idx <- sample.int(n_participants, size = floor(0.04 * n_participants))
   participants$dod[death_idx] <- pmin(
     censor_date,
     participants$enroll_date[death_idx] + sample(1000:5000, length(death_idx), replace = TRUE)
   )
+  # ~2% of the remaining are lost to follow-up (exit_date set, still alive).
   ltfu_pool <- setdiff(seq_len(n_participants), death_idx)
   ltfu_idx <- sample(ltfu_pool, size = floor(0.02 * n_participants))
   participants$exit_date[ltfu_idx] <- pmin(
@@ -53,10 +60,12 @@ prong1_generate_dummy_data <- function(
     participants$enroll_date[ltfu_idx] + sample(800:4000, length(ltfu_idx), replace = TRUE)
   )
 
+  # Lookup: patient_uid → enroll_date (used when assigning diagnosis onsets).
   enroll_by_id <- setNames(participants$enroll_date, participants$patient_uid)
   ids <- participants$patient_uid
   diag_chunks <- list()
 
+  # Small helper: one diagnosis row per (patient, code, date).
   make_dx <- function(uids, code, dates) {
     data.frame(
       patient_uid = uids,
@@ -66,16 +75,19 @@ prong1_generate_dummy_data <- function(
     )
   }
 
+  # Planted D1→D2 trajectories: known temporal associations for demos/tests.
+  # n_d1 get D1; a subset n_forward later get D2 after a lag ~N(lag_mean, lag_sd) years.
   planted_specs <- list(
     list(d1 = "I10", d2 = "C34", n_d1 = 600L, n_forward = 150L, lag_mean = 5.0, lag_sd = 1.2),
     list(d1 = "E11", d2 = "C18", n_d1 = 550L, n_forward = 140L, lag_mean = 6.0, lag_sd = 1.3),
     list(d1 = "J44", d2 = "C34", n_d1 = 500L, n_forward = 130L, lag_mean = 4.5, lag_sd = 1.0),
     list(d1 = "D37", d2 = "C18", n_d1 = 400L, n_forward = 100L, lag_mean = 3.5, lag_sd = 0.9),
+    # Prostate cancer path: restrict D1 pool to males.
     list(d1 = "I10", d2 = "C61", n_d1 = 350L, n_forward = 90L, lag_mean = 5.5, lag_sd = 1.1, male_only = TRUE)
   )
 
-  used <- character(0)
-  planted_summary <- list()
+  used <- character(0)          # patients already assigned a planted D1 (no reuse across specs)
+  planted_summary <- list()     # recorded into the JSON manifest
 
   for (spec in planted_specs) {
     pool <- ids
@@ -88,11 +100,14 @@ prong1_generate_dummy_data <- function(
     }
     d1_ids <- sample(pool, spec$n_d1)
     used <- c(used, d1_ids)
+    # Subset who will also receive the forward (D2) diagnosis.
     forward_ids <- sample(d1_ids, spec$n_forward)
 
+    # D1 onset: 30–900 days after enrollment.
     d1_dates <- enroll_by_id[d1_ids] + sample(30:900, length(d1_ids), replace = TRUE)
     diag_chunks[[length(diag_chunks) + 1L]] <- make_dx(d1_ids, spec$d1, d1_dates)
 
+    # D2 onset: D1 date + lag in years; clamp if past censor_date.
     fwd_dates_d1 <- d1_dates[match(forward_ids, d1_ids)]
     lag_years <- pmax(1.0, rnorm(length(forward_ids), mean = spec$lag_mean, sd = spec$lag_sd))
     d2_dates <- fwd_dates_d1 + as.integer(round(lag_years * 365))
@@ -107,6 +122,7 @@ prong1_generate_dummy_data <- function(
 
   diagnoses <- bind_rows(diag_chunks)
 
+  # Background cancer incidence among people who do not already have that code.
   bg_cancers <- c("C18", "C34", "C61")
   bg_rate <- 0.012
   for (code in bg_cancers) {
@@ -118,6 +134,7 @@ prong1_generate_dummy_data <- function(
     diagnoses <- bind_rows(diagnoses, make_dx(pick, code, dx_dates))
   }
 
+  # Extra non-cancer / comorbidity rows so the EHR is not only planted signals.
   extra_specs <- list(
     list(code = "I10", n = 400L),
     list(code = "E11", n = 350L),
@@ -134,6 +151,7 @@ prong1_generate_dummy_data <- function(
     diagnoses <- bind_rows(diagnoses, make_dx(pick, spec$code, dx_dates))
   }
 
+  # A few longer ICD strings (I10.9) to exercise code-normalization downstream.
   long_pick <- sample(ids, 80L)
   diagnoses <- bind_rows(
     diagnoses,
@@ -146,6 +164,7 @@ prong1_generate_dummy_data <- function(
 
   diagnoses <- diagnoses %>% arrange(patient_uid, onset_date)
 
+  # Human-readable labels for the codes used above (demo dictionary).
   dictionary <- data.frame(
     code = c("I10", "E11", "J44", "D37", "C18", "C34", "C61", "R05", "Z72"),
     label = c(
@@ -162,6 +181,7 @@ prong1_generate_dummy_data <- function(
     stringsAsFactors = FALSE
   )
 
+  # Blank missing dates for CSV friendliness; stringify dates for write_csv.
   participants_out <- participants %>%
     mutate(
       dod = ifelse(is.na(dod), "", as.character(dod)),
@@ -174,11 +194,13 @@ prong1_generate_dummy_data <- function(
   readr::write_csv(diagnoses_out, file.path(output_dir, "diagnoses.csv"))
   readr::write_csv(dictionary, file.path(output_dir, "disease_dictionary.csv"))
 
+  # Level-3 code counts (first 3 alphanumeric chars) for the manifest summary.
   counts <- diagnoses %>%
     mutate(code3 = substr(gsub("[^A-Za-z0-9]", "", toupper(diagnosis_code)), 1, 3)) %>%
     distinct(patient_uid, code3) %>%
     count(code3, name = "n_patients")
 
+  # Sidecar JSON: seed, sizes, planted pairs, counts, and actual column names.
   manifest <- list(
     seed = as.integer(seed),
     n_participants = n_participants,

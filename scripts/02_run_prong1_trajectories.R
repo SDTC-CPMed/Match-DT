@@ -2,27 +2,29 @@
 # Run Prong 1 prefilter → matched RR → directionality.
 #
 # Usage (from project root):
-#   Rscript --vanilla scripts/02_run_prong1_trajectories.R
+#   Rscript --vanilla scripts/02_run_prong1_trajectories.R --help
 
-args <- commandArgs(trailingOnly = TRUE)
+suppressPackageStartupMessages(library(optparse))
 
-parse_args <- function(args) {
-  out <- list(prepared_dir = NULL, output_dir = NULL)
-  i <- 1L
-  while (i <= length(args)) {
-    key <- args[[i]]
-    if (!startsWith(key, "--") || i == length(args)) stop("Unexpected argument: ", key)
-    val <- args[[i + 1L]]
-    if (key == "--prepared-dir") out$prepared_dir <- val
-    else if (key == "--output-dir") out$output_dir <- val
-    else stop("Unknown flag: ", key)
-    i <- i + 2L
-  }
-  out
-}
+# Optional CLI: --prepared-dir, --output-dir (else from config.yaml).
+option_list <- list(
+  make_option("--prepared-dir", type = "character", default = NULL,
+              help = "Prepared input directory (default: config)"),
+  make_option("--output-dir", type = "character", default = NULL,
+              help = "Trajectory output directory (default: config)")
+)
 
-cli <- parse_args(args)
+# convert_hyphens_to_underscores: --prepared-dir becomes opt$prepared_dir.
+opt <- parse_args(
+  OptionParser(
+    usage = "Rscript --vanilla scripts/02_run_prong1_trajectories.R [options]",
+    description = "Run Prong 1 prefilter, matched relative risk, and directionality.",
+    option_list = option_list
+  ),
+  convert_hyphens_to_underscores = TRUE
+)
 
+# When launched via Rscript, cd to the repo root (parent of scripts/).
 script_path <- local({
   ca <- commandArgs(trailingOnly = FALSE)
   f <- sub("^--file=", "", ca[startsWith(ca, "--file=")])
@@ -40,12 +42,13 @@ p1 <- cfg$prong1
 root <- cfg$project_root
 
 prepared_dir <- prong1_resolve_path(
-  if (!is.null(cli$prepared_dir)) cli$prepared_dir else p1$prepared_dir, root
+  if (!is.null(opt$prepared_dir)) opt$prepared_dir else p1$prepared_dir, root
 )
 output_dir <- prong1_resolve_path(
-  if (!is.null(cli$output_dir)) cli$output_dir else p1$output_dir, root
+  if (!is.null(opt$output_dir)) opt$output_dir else p1$output_dir, root
 )
 
+# Fail fast if prep step was skipped / incomplete.
 required <- c("participants.rds", "diagnoses_earliest.rds", "disease_n_patient.tsv")
 missing <- required[!file.exists(file.path(prepared_dir, required))]
 if (length(missing) > 0) {
@@ -56,6 +59,7 @@ if (length(missing) > 0) {
   )
 }
 
+# All analysis thresholds come from config$prong1.
 prong1_run_trajectories(
   prepared_dir = prepared_dir,
   output_dir = output_dir,
