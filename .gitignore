@@ -11,6 +11,9 @@ renv/python/
 renv/sandbox/
 renv/staging/
 
+# Local EHR schemas / SQL (not shared in git)
+global_ehrs/
+
 # Generated demo EHR (recreate with scripts/00_generate_dummy_data.R)
 data/raw/dummy/*.csv
 data/raw/dummy/*.json
