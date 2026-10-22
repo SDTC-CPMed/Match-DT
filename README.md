@@ -2,7 +2,14 @@
 
 Self-contained **R** tutorial for Prong 1: turn EHR-style tables into disease→cancer relative-risk trajectories and a bubble plot of **log2(RR) vs mean lag years**.
 
-This repository is intentionally small. It does **not** include the original UK Biobank extract or the full TWIN-MAP monorepo — only what you need to learn and rerun the method on your own data.
+This project is intentionally small. It does **not** include the original UK Biobank extract or the full TWIN-MAP monorepo — only what you need to learn and rerun the method on your own data.
+
+## If you received a zip archive
+
+1. Unzip the archive to a folder you can write to.
+2. Open a terminal and `cd` into that folder (the directory that contains `README.md`, `scripts/`, and `config/`).
+3. Install the R packages below, then follow **Quick start**.
+4. You do **not** need Git. All runnable scripts live under `scripts/`.
 
 ## What you will run
 
@@ -10,19 +17,19 @@ This repository is intentionally small. It does **not** include the original UK 
 00 generate dummy EHR  →  01 prepare/validate  →  02 RR + directionality  →  03 bubble plot
 ```
 
-Dummy CSVs, plays a role of EHR, and use **non-default column names** on purpose. [`config/prong1_column_map.yaml`](config/prong1_column_map.yaml) shows how to remap them to the canonical schema. 
+Dummy CSVs play the role of an EHR and use **non-default column names** on purpose. [`config/prong1_column_map.yaml`](config/prong1_column_map.yaml) shows how to remap them to the canonical schema.
 
 ## Requirements
 
 - R ≥ 4.2
-- Packages: `dplyr`, `readr`, `yaml`, `jsonlite`, `stringr`, `MatchIt`, `ggplot2`, `ggrepel`
+- Packages: `dplyr`, `readr`, `yaml`, `jsonlite`, `stringr`, `MatchIt`, `ggplot2`, `ggrepel`, `optparse`
 
 ### Install packages
 
 ```r
 install.packages(c(
   "dplyr", "readr", "yaml", "jsonlite", "stringr",
-  "MatchIt", "ggplot2", "ggrepel"
+  "MatchIt", "ggplot2", "ggrepel", "optparse"
 ))
 ```
 
@@ -36,7 +43,7 @@ Use `Rscript --vanilla …` if a project-level `renv` setup gets in the way.
 
 ## Quick start (seeded demo)
 
-From the repository root:
+From the project root (the unzipped folder):
 
 ```bash
 # 0) Create ~30k-person synthetic EHR (repeatable with --seed 42)
@@ -88,6 +95,8 @@ Canonical fields (what the analysis code expects) differ from the dummy export:
 
 Edit [`config/prong1_column_map.yaml`](config/prong1_column_map.yaml) when pointing the pipeline at real EHR extracts. Schema details: [`docs/prong1_input_preparation.md`](docs/prong1_input_preparation.md).
 
+If your EHR uses disease **names**, SNOMED, or other local codes instead of ICD-10, map them to ICD-10 level 3 **before** script `01`. See [*Converting disease names or local codes to ICD-10 level 3*](docs/prong1_input_preparation.md#converting-disease-names-or-local-codes-to-icd-10-level-3) in that doc.
+
 ## Configuration
 
 [`config/config.yaml`](config/config.yaml) `prong1:` block controls paths, censor date, size filters, MatchIt settings, FDR thresholds, end cancers (`disease_oi`), and D1 chapter exclusions (`R`, `Z`).
@@ -119,9 +128,9 @@ Mean lag on the plot uses only directed (D2 after D1) cases.
 config/          config.yaml + column map
 scripts/         00–03 runnable steps
 src/prong1/      helpers (prep, trajectories, dummy, plot)
-docs/            schema reference
-data/raw/dummy/  generated (gitignored CSVs)
-data/processed/  pipeline outputs (gitignored)
+docs/            input-schema reference and getting started
+data/raw/dummy/  generated demo CSVs (recreate with script 00)
+data/processed/  pipeline outputs
 reports/figures/ bubble plot
 ```
 
