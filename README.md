@@ -66,7 +66,7 @@ Rscript --vanilla scripts/00_generate_dummy_data.R --seed 42 --n 50000 --dirty
 
 Gold maps for grading only: [`tests/fixtures/dummy_dirty_solution/`](tests/fixtures/dummy_dirty_solution/).
 
-**Agent skill (included in this repo):** [`.cursor/skills/prong1-trajectories/`](.cursor/skills/prong1-trajectories/) — clones and zip archives of this package include it so an agent can run or guide env check → prep → trajectories → plot.
+**Agent skill (included in this repo):** [`skills/prong1-trajectories/`](skills/prong1-trajectories/) — agent-agnostic instructions so any coding agent can run or guide env check → prep → trajectories → plot. A symlink under `.cursor/skills/` is only for Cursor discovery.
 
 
 Each script accepts `--help` for its flags. Omitted path flags fall back to `config/config.yaml`.
@@ -154,7 +154,7 @@ scripts/         env check + 00–03 runnable steps
 apps/            optional Shiny MatchIt explorer
 src/prong1/      helpers (prep, trajectories, dummy, plot)
 docs/            input-schema reference and vendoring
-.cursor/skills/  Prong 1 agent skill (versioned; ships with the package)
+skills/          Prong 1 agent skill (versioned; ships with the package)
 data/raw/dummy/  generated demo CSVs (recreate with script 00)
 data/processed/  pipeline outputs
 reports/figures/ bubble plot

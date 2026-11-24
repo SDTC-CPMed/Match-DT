@@ -4,12 +4,12 @@
 .Ruserdata
 .DS_Store
 
-# Keep project Cursor skills versioned with the repo (served on clone/vendor).
+# Canonical agent skills live under skills/ (versioned).
+# Optional IDE shim: .cursor/skills/prong1-trajectories → ../../skills/prong1-trajectories
 # Ignore other local Cursor IDE state if present.
 .cursor/*
 !.cursor/skills/
-!.cursor/skills/**
-
+!.cursor/skills/prong1-trajectories
 renv/library/
 renv/local/
 renv/cellar/

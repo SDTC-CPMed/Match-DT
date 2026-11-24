@@ -1,6 +1,6 @@
 # Canonical schema and column maps
 
-Full narrative: [`docs/prong1_input_preparation.md`](../../../docs/prong1_input_preparation.md).
+Full narrative: [`docs/prong1_input_preparation.md`](../../docs/prong1_input_preparation.md).
 
 ## Tables
 
@@ -63,7 +63,7 @@ disease_dictionary:
   disease_name: <source_col>
 ```
 
-Clean dummy map: [`config/prong1_column_map.yaml`](../../../config/prong1_column_map.yaml).
+Clean dummy map: [`config/prong1_column_map.yaml`](../../config/prong1_column_map.yaml).
 
 ## ICD / free-text
 

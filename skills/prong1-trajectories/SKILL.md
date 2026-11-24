@@ -55,4 +55,5 @@ Optional after `01`: `shiny::runApp("apps/match_explorer")` (needs `shiny`).
 - Prefer ~50k for agent tests; warn before MatchIt on ~500k.
 - Dirty raw under `data/raw/dummy_dirty/`: **derive** maps yourself. Open `tests/fixtures/dummy_dirty_solution/` only if the user asks to grade.
 - Real UKBB disease subsets ≠ full clinic; say so if controls are incomplete.
+- This skill is agent-agnostic (canonical path `skills/prong1-trajectories/`).
 - Read detail only as needed: [reference-env.md](reference-env.md), [reference-schema.md](reference-schema.md), [reference-config.md](reference-config.md), [troubleshooting.md](troubleshooting.md).

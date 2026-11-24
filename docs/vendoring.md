@@ -34,9 +34,9 @@ Override `prong1:` in `config/config.yaml` or pass CLI flags to scripts `01`–`
 
 ## Agent skill (ships with this package)
 
-The Prong 1 Cursor skill is **versioned in this repository** at [`.cursor/skills/prong1-trajectories/`](../.cursor/skills/prong1-trajectories/). Cloning or vendoring this tree includes the skill; no separate install step.
+The Prong 1 skill is **agent-agnostic** and versioned at [`skills/prong1-trajectories/`](../skills/prong1-trajectories/). Cloning or vendoring this tree includes it; no separate install step.
 
-Parent frameworks that use Cursor should keep that path intact (or symlink/copy it into the parent’s `.cursor/skills/` and keep script paths relative to this package root).
+Point any coding agent at that directory (or `@skills/prong1-trajectories/SKILL.md`). The optional symlink `.cursor/skills/prong1-trajectories` exists only so Cursor can auto-discover the same files.
 
 ## Do not
 
