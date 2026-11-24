@@ -1,0 +1,19 @@
+# Gold map for data/raw/dummy_dirty (grading only — agents should derive this).
+participants:
+  person_id: pt_id
+  sex: sex_code
+  age_at_baseline: age
+  baseline_date: visit_dt
+  assessment_centre: facility
+  ethnicity: race_grp
+  death_date: death_dt
+  lost_to_followup_date: ltfu_dt
+
+diagnoses:
+  person_id: pt_id
+  icd10: dx_raw
+  diagnosis_date: dx_date
+
+disease_dictionary:
+  icd10: dx_code
+  disease_name: dx_label

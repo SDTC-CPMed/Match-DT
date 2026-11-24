@@ -1,0 +1,10 @@
+# Free-text labels planted in dirty diagnoses.dx_raw → ICD-10 level-3.
+# Apply before scripts/01 (replace matching dx_raw values with these codes).
+essential hypertension: I10
+type 2 diabetes: E11
+COPD - other: J44
+uncertain digestive neoplasm: D37
+colon cancer: C18
+lung cancer: C34
+prostate cancer: C61
+breast cancer: C50

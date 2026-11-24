@@ -1,0 +1,10 @@
+# Soft expectations after applying gold maps + free-text→ICD, then script 01.
+# Counts vary slightly with seed/n; use as a checklist, not exact asserts.
+# After gold free-text→ICD + column_map, seed 42 / n=50000:
+# participants 50025 rows in → 50000 unique out; diagnoses earliest ~16k.
+n_participants_out_min: 49000
+n_participants_out_typical: 50000
+ready: true
+expect_diag_drops_bad_icd: true
+expect_diag_orphans_dropped: true
+expect_duplicate_participants_collapsed: true

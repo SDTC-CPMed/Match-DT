@@ -3,6 +3,13 @@
 .RData
 .Ruserdata
 .DS_Store
+
+# Keep project Cursor skills versioned with the repo (served on clone/vendor).
+# Ignore other local Cursor IDE state if present.
+.cursor/*
+!.cursor/skills/
+!.cursor/skills/**
+
 renv/library/
 renv/local/
 renv/cellar/
@@ -17,10 +24,16 @@ global_ehrs/
 # Generated demo EHR (recreate with scripts/00_generate_dummy_data.R)
 data/raw/dummy/*.csv
 data/raw/dummy/*.json
+data/raw/dummy_50k/*.csv
+data/raw/dummy_50k/*.json
+data/raw/dummy_dirty/*.csv
+data/raw/dummy_dirty/*.json
 
 # Pipeline outputs
 data/processed/prong1_input/*
 !data/processed/prong1_input/.gitkeep
+data/processed/prong1_input_dirty/*
+!data/processed/prong1_input_dirty/.gitkeep
 data/processed/prong1_trajectories/*
 !data/processed/prong1_trajectories/.gitkeep
 reports/figures/*

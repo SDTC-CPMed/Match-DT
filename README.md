@@ -24,43 +24,63 @@ Dummy CSVs play the role of an EHR and use **non-default column names** on purpo
 - R ≥ 4.2
 - Packages: `dplyr`, `readr`, `yaml`, `jsonlite`, `stringr`, `MatchIt`, `ggplot2`, `ggrepel`, `optparse`
 
-### Install packages
+### Check / install environment
 
-```r
-install.packages(c(
-  "dplyr", "readr", "yaml", "jsonlite", "stringr",
-  "MatchIt", "ggplot2", "ggrepel", "optparse"
-))
-```
-
-Or from the project root:
+From the project root:
 
 ```bash
-Rscript --vanilla -e 'install.packages(c("dplyr","readr","yaml","jsonlite","stringr","MatchIt","ggplot2","ggrepel","optparse"), repos="https://cloud.r-project.org")'
+Rscript --vanilla scripts/check_prong1_env.R
+# if packages are missing:
+Rscript --vanilla scripts/check_prong1_env.R --install
 ```
 
-Use `Rscript --vanilla …` if a project-level `renv` setup gets in the way.
+Success prints `ENV READY: YES`. Prefer `Rscript --vanilla …` if a project-level `renv` setup gets in the way.
 
 ## Quick start (seeded demo)
 
 From the project root (the unzipped folder):
 
 ```bash
-# 0) Create ~30k-person synthetic EHR (repeatable with --seed 42)
+# 0) Environment preflight
+Rscript --vanilla scripts/check_prong1_env.R
+
+# 1) Create synthetic EHR (repeatable with --seed 42)
 Rscript --vanilla scripts/00_generate_dummy_data.R --seed 42
 
-# 1) Map columns, normalize ICD-10 level-3, earliest diagnosis dates
+# 2) Map columns, normalize ICD-10 level-3, earliest diagnosis dates
 Rscript --vanilla scripts/01_prepare_prong1_input.R
 
-# 2) Prefilter → MatchIt RR → directionality 
+# 3) Prefilter → MatchIt RR → directionality
 #    Expect several minutes on a laptop.
 Rscript --vanilla scripts/02_run_prong1_trajectories.R
 
-# 3) Bubble plot: mean lag years (x) vs log2(RR) (y) to recreate a plot like in the paper
+# 4) Bubble plot: mean lag years (x) vs log2(RR) (y) to recreate a plot like in the paper
 Rscript --vanilla scripts/03_plot_prong1_rr_bubble.R
 ```
 
+Dirty agent-test extract (obfuscated columns, free-text diagnoses; no column map beside the CSVs):
+
+```bash
+Rscript --vanilla scripts/00_generate_dummy_data.R --seed 42 --n 50000 --dirty
+```
+
+Gold maps for grading only: [`tests/fixtures/dummy_dirty_solution/`](tests/fixtures/dummy_dirty_solution/).
+
+**Agent skill (included in this repo):** [`.cursor/skills/prong1-trajectories/`](.cursor/skills/prong1-trajectories/) — clones and zip archives of this package include it so an agent can run or guide env check → prep → trajectories → plot.
+
+
 Each script accepts `--help` for its flags. Omitted path flags fall back to `config/config.yaml`.
+
+### Explore MatchIt neighbours (optional)
+
+After step `01`, open a Shiny app that runs the same nearest-neighbour match as the pipeline and shows the controls chosen for one exposed patient:
+
+```bash
+Rscript --vanilla -e 'install.packages("shiny", repos="https://cloud.r-project.org")'
+Rscript --vanilla -e 'shiny::runApp("apps/match_explorer")'
+```
+
+Pick a D1, filter by sex / age band / centre / year, select a patient, then click **Run match**.
 
 ### Expected outputs
 
@@ -122,13 +142,19 @@ Then run steps `01`–`03` (skip `00`).
 
 Mean lag on the plot uses only directed (D2 after D1) cases.
 
+## Vendoring
+
+To embed this package in a larger framework (submodule or copy), see [`docs/vendoring.md`](docs/vendoring.md).
+
 ## Repository layout
 
 ```text
 config/          config.yaml + column map
-scripts/         00–03 runnable steps
+scripts/         env check + 00–03 runnable steps
+apps/            optional Shiny MatchIt explorer
 src/prong1/      helpers (prep, trajectories, dummy, plot)
-docs/            input-schema reference and getting started
+docs/            input-schema reference and vendoring
+.cursor/skills/  Prong 1 agent skill (versioned; ships with the package)
 data/raw/dummy/  generated demo CSVs (recreate with script 00)
 data/processed/  pipeline outputs
 reports/figures/ bubble plot
@@ -138,6 +164,7 @@ reports/figures/ bubble plot
 
 | Issue | Fix |
 |-------|-----|
+| Missing packages / env | `Rscript --vanilla scripts/check_prong1_env.R --install` |
 | Missing packages | Install the list above; prefer `Rscript --vanilla` |
 | `Prepared inputs missing` | Run `01` before `02` |
 | Empty `Final_trajectories.csv` | Check planted demo was generated (`00`); do not raise thresholds above biobank defaults for the dummy run |

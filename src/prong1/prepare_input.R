@@ -91,10 +91,19 @@ prong1_read_table <- function(path) {
   if (ext == "rds") {
     return(as.data.frame(readRDS(path), stringsAsFactors = FALSE))
   }
+  # Read everything as character so mixed date/sex encodings survive until
+  # prong1_parse_date / prong1_normalize_sex (readr type-guessing would NA them).
+  col_chr <- readr::cols(.default = readr::col_character())
   if (ext %in% c("tsv", "txt")) {
-    return(as.data.frame(readr::read_tsv(path, show_col_types = FALSE), stringsAsFactors = FALSE))
+    return(as.data.frame(
+      readr::read_tsv(path, col_types = col_chr, show_col_types = FALSE),
+      stringsAsFactors = FALSE
+    ))
   }
-  as.data.frame(readr::read_csv(path, show_col_types = FALSE), stringsAsFactors = FALSE)
+  as.data.frame(
+    readr::read_csv(path, col_types = col_chr, show_col_types = FALSE),
+    stringsAsFactors = FALSE
+  )
 }
 
 # Select mapped source columns and rename them to canonical names.
