@@ -15,5 +15,6 @@ Imports:
     stringr,
     MatchIt,
     ggplot2,
-    ggrepel
+    ggrepel,
+    shiny
 Encoding: UTF-8
