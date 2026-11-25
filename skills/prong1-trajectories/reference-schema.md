@@ -31,7 +31,11 @@ Full narrative: [`docs/prong1_input_preparation.md`](../../docs/prong1_input_pre
 | `icd10` | string | Truncated to ICD-10 level-3 in prep |
 | `diagnosis_date` | date | Earliest date, direction, lag |
 
-Level-3 = letter + two digits (`I10`, `E11`, `C34`). Prep strips non-alphanumerics and keeps first three characters (`I10.9` → `I10`). Free text must **not** be passed as `icd10`.
+Level-3 = letter + two digits after strip/uppercase (`^[A-Z][0-9]{2}`, e.g. `I10`, `E11`, `C34`). Dotted codes normalize (`I10.9` → `I10`). Strings that fail this pattern (`pending`, free text) become `NA` — they are **not** truncated to `PEN`/`NOT`. Free text must be mapped via JSON + `00b_map_diagnoses.R` first.
+
+Date columns (`baseline_date`, `diagnosis_date`, `death_date`, `lost_to_followup_date`) accept explicit `YYYY-MM-DD`, `DD/MM/YYYY`, or `YYYY/MM/DD` only (no silent format guessing).
+
+Age bands for matching include `20-`, `20-29`, `30-39`, …, `70+`.
 
 ### Dictionary (optional)
 
@@ -74,3 +78,26 @@ If the extract has disease names or local codes:
 3. Keep original text in extra columns if useful; prep ignores unmapped fields.
 
 Never truncate English words and call them ICD codes.
+
+## ICD mapping JSON (human review)
+
+Primary editable format for `scripts/00b_map_diagnoses.R` / `--write-icd-template`:
+
+```json
+{
+  "metadata": { "source_file": "...", "dx_col": "dx_raw", "created_at": "..." },
+  "mappings": [
+    {
+      "source_value": "essential hypertension",
+      "n_rows": 978,
+      "icd10": "I10",
+      "method": "agent_inferred",
+      "confidence": "high",
+      "notes": "Mapped from free text; please verify.",
+      "confirmed": false
+    }
+  ]
+}
+```
+
+Set `confirmed: true` after human review. Flat `{"label":"I10"}` is accepted but treated as unconfirmed.

@@ -10,9 +10,9 @@ parent-framework/
     config/
     scripts/
     src/prong1/
-    apps/match_explorer/
     data/                  # stays inside the vendored tree
     reports/
+    skills/prong1-trajectories/
 ```
 
 Run all Rscripts with working directory = the vendored project root (the folder that contains this repo’s `README.md`).
@@ -26,7 +26,7 @@ Rscript --vanilla scripts/check_prong1_env.R
 Rscript --vanilla scripts/check_prong1_env.R --install
 ```
 
-Required R ≥ 4.2 and packages: `dplyr`, `readr`, `yaml`, `jsonlite`, `stringr`, `MatchIt`, `ggplot2`, `ggrepel`, `optparse`. Optional: `shiny` (Match explorer).
+Required R ≥ 4.2 and packages: `dplyr`, `readr`, `yaml`, `jsonlite`, `stringr`, `MatchIt`, `ggplot2`, `ggrepel`, `optparse`.
 
 ## Paths
 

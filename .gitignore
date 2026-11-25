@@ -34,7 +34,13 @@ data/processed/prong1_input/*
 !data/processed/prong1_input/.gitkeep
 data/processed/prong1_input_dirty/*
 !data/processed/prong1_input_dirty/.gitkeep
+data/processed/prong1_input_50k_clean/
+data/processed/prong1_trajectories_50k_clean/
+data/processed/prong1_trajectories_dirty/
 data/processed/prong1_trajectories/*
 !data/processed/prong1_trajectories/.gitkeep
 reports/figures/*
 !reports/figures/.gitkeep
+data/raw/dummy_dirty/diagnoses_mapped.csv
+data/raw/dummy_dirty/diagnoses_icd.csv
+data/raw/dummy_dirty/icd10_mapping.json

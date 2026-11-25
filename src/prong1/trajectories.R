@@ -29,10 +29,7 @@ prong1_build_clinic <- function(participants, censor_date) {
     mutate(
       person_id = as.character(person_id),
       sex = as.factor(sex),
-      age_band = factor(
-        as.character(age_band),
-        levels = c("30-39", "40-49", "50-59", "60-69", "70+")
-      ),
+      age_band = prong1_age_band_factor(age_band),
       assessment_year = as.numeric(assessment_year),
       assessment_centre = as.factor(assessment_centre),
       ethnicity = as.factor(ethnicity),
@@ -313,8 +310,32 @@ prong1_run_trajectories <- function(
   )
 
   clinic <- prong1_build_clinic(participants, censor_date)
+
+  n_diseases_total <- nrow(disease_n_patient)
+  n_ge_min <- sum(disease_n_patient$n_patients >= n_patient_min)
+  oi_present <- intersect(disease_oi, disease_n_patient$icd10)
+  oi_missing <- setdiff(disease_oi, disease_n_patient$icd10)
+
+  message("=== Trajectory funnel ===")
+  message("  Clinic N=", nrow(clinic))
+  message("  Diseases total: ", n_diseases_total, " | with n >= ", n_patient_min, ": ", n_ge_min)
+  message("  disease_oi present: ", length(oi_present), "/", length(disease_oi),
+          if (length(oi_missing) > 0) paste0(" (missing: ", paste(oi_missing, collapse = ", "), ")") else "")
+
   pairs <- prong1_make_pairs(disease_n_patient, disease_oi, n_patient_min, pair_scope)
-  message("Clinic N=", nrow(clinic), "; candidate pairs=", nrow(pairs))
+  message("  Candidate pairs: ", nrow(pairs))
+  if (nrow(pairs) == 0) {
+    message(
+      "FUNNEL STOP: 0 candidate pairs. Causes: fewer than 2 diseases with n >= n_patient_min (",
+      n_patient_min, "), or no disease_oi codes present in prepared data, or pair_scope filter."
+    )
+    dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+    readr::write_csv(
+      tibble(D1 = character(), D2 = character()),
+      file.path(output_dir, "Final_trajectories.csv")
+    )
+    return(invisible(list(prefilter = NULL, final = tibble())))
+  }
 
   # --- Prefilter ---
   prefilter_df <- prong1_run_prefilter(
@@ -323,6 +344,15 @@ prong1_run_trajectories <- function(
   dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
   saveRDS(prefilter_df, file.path(output_dir, "Step-Prefilter_result.rds"))
   readr::write_csv(prefilter_df, file.path(output_dir, "Step-Prefilter_result.csv"))
+  message("  Pairs with prefilter rows (after min_comorbid_overlap=", min_comorbid_overlap, "): ", nrow(prefilter_df))
+  if (nrow(prefilter_df) == 0) {
+    message(
+      "FUNNEL STOP: 0 pairs after min_comorbid_overlap=", min_comorbid_overlap,
+      ". Lower min_comorbid_overlap or check diagnosis coverage."
+    )
+    readr::write_csv(tibble(), file.path(output_dir, "Final_trajectories.csv"))
+    return(invisible(list(prefilter = prefilter_df, final = tibble())))
+  }
 
   # Restrict to DOI D2s, drop excluded D1 chapters, FDR-adjust prefilter p.
   prefilter_df_doi <- prefilter_df %>%
@@ -331,12 +361,23 @@ prong1_run_trajectories <- function(
     mutate(prefilter.p.adjust = p.adjust(prefilter.p, method = "fdr"))
 
   readr::write_csv(prefilter_df_doi, file.path(output_dir, "prefilter_df_doi.csv"))
-  message("DOI pairs after D1 letter exclusion: ", nrow(prefilter_df_doi))
+  message(
+    "  After exclude_d1_letters (", paste(exclude_d1_letters, collapse = ","),
+    "): ", nrow(prefilter_df_doi)
+  )
 
   pairs_to_process <- prefilter_df_doi %>%
     filter(!is.na(prefilter.p.adjust), prefilter.p.adjust < prefilter_fdr)
-  message("Prefilter FDR hits: ", nrow(pairs_to_process))
+  message("  Prefilter FDR hits (p.adj < ", prefilter_fdr, "): ", nrow(pairs_to_process))
   readr::write_csv(pairs_to_process, file.path(output_dir, "pairs_to_process.csv"))
+  if (nrow(pairs_to_process) == 0) {
+    message(
+      "FUNNEL STOP: 0 prefilter FDR hits at threshold ", prefilter_fdr,
+      ". No pairs proceed to MatchIt RR."
+    )
+    readr::write_csv(tibble(), file.path(output_dir, "Final_trajectories.csv"))
+    return(invisible(list(prefilter = prefilter_df, prefilter_doi = prefilter_df_doi, final = tibble())))
+  }
 
   # --- Matched RR + direction ---
   rr_df <- prong1_run_rr_direction(
@@ -354,7 +395,12 @@ prong1_run_trajectories <- function(
       RR_significant = ifelse(!is.na(p.value.RR.adj) & p.value.RR.adj < rr_fdr, "1", "-1")
     ) %>%
     filter(RR_significant == "1")
-  message("Significant risk associations: ", nrow(sig_rr_df))
+  message("  RR FDR hits (p.adj < ", rr_fdr, "): ", nrow(sig_rr_df))
+  if (nrow(sig_rr_df) == 0) {
+    message("FUNNEL STOP: 0 RR-significant pairs at rr_fdr=", rr_fdr, ".")
+    readr::write_csv(tibble(), file.path(output_dir, "Final_trajectories.csv"))
+    return(invisible(list(prefilter = prefilter_df, rr = rr_df, final = tibble())))
+  }
 
   final_trajectories <- sig_rr_df %>%
     mutate(
@@ -365,7 +411,10 @@ prong1_run_trajectories <- function(
     ) %>%
     filter(direction_yes_no == "1") %>%
     arrange(D2, desc(RR))
-  message("Directed trajectories: ", nrow(final_trajectories))
+  message("  Directed FDR hits (p.adj < ", direction_fdr, "): ", nrow(final_trajectories))
+  if (nrow(final_trajectories) == 0) {
+    message("FUNNEL STOP: 0 directed trajectories at direction_fdr=", direction_fdr, ".")
+  }
   readr::write_csv(final_trajectories, file.path(output_dir, "Final_trajectories.csv"))
 
   invisible(list(

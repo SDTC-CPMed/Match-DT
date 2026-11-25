@@ -44,18 +44,22 @@ required_pkgs <- c(
   "dplyr", "readr", "yaml", "jsonlite", "stringr",
   "MatchIt", "ggplot2", "ggrepel", "optparse"
 )
-optional_pkgs <- c("shiny")
+optional_pkgs <- character(0)
 
 required_paths <- c(
   "config/config.yaml",
   "scripts/00_generate_dummy_data.R",
+  "scripts/00b_map_diagnoses.R",
   "scripts/01_prepare_prong1_input.R",
   "scripts/02_run_prong1_trajectories.R",
   "scripts/03_plot_prong1_rr_bubble.R",
+  "scripts/profile_ehr_inputs.R",
+  "scripts/verify_prong1_run.R",
   "src/prong1/prepare_input.R",
   "src/prong1/trajectories.R",
   "src/prong1/generate_dummy.R",
-  "src/prong1/plot_bubble.R"
+  "src/prong1/plot_bubble.R",
+  "skills/prong1-trajectories/SKILL.md"
 )
 
 ok <- TRUE
@@ -107,14 +111,12 @@ if (length(missing_required) > 0) {
   message("Required packages: OK (", paste(required_pkgs, collapse = ", "), ")")
 }
 
-if (length(missing_optional) > 0) {
-  message(
-    "Optional packages missing (Match explorer): ",
-    paste(missing_optional, collapse = ", "),
-    " — warn only"
-  )
-} else {
-  message("Optional packages: OK (", paste(optional_pkgs, collapse = ", "), ")")
+if (length(optional_pkgs) > 0) {
+  if (length(missing_optional) > 0) {
+    message("Optional packages missing: ", paste(missing_optional, collapse = ", "), " — warn only")
+  } else {
+    message("Optional packages: OK (", paste(optional_pkgs, collapse = ", "), ")")
+  }
 }
 
 # --- Paths ---

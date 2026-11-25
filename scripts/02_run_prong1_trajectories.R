@@ -6,15 +6,15 @@
 
 suppressPackageStartupMessages(library(optparse))
 
-# Optional CLI: --prepared-dir, --output-dir (else from config.yaml).
 option_list <- list(
+  make_option("--config", type = "character", default = NULL,
+              help = "Config YAML (default: config/config.yaml)"),
   make_option("--prepared-dir", type = "character", default = NULL,
               help = "Prepared input directory (default: config)"),
   make_option("--output-dir", type = "character", default = NULL,
               help = "Trajectory output directory (default: config)")
 )
 
-# convert_hyphens_to_underscores: --prepared-dir becomes opt$prepared_dir.
 opt <- parse_args(
   OptionParser(
     usage = "Rscript --vanilla scripts/02_run_prong1_trajectories.R [options]",
@@ -24,7 +24,6 @@ opt <- parse_args(
   convert_hyphens_to_underscores = TRUE
 )
 
-# When launched via Rscript, cd to the repo root (parent of scripts/).
 script_path <- local({
   ca <- commandArgs(trailingOnly = FALSE)
   f <- sub("^--file=", "", ca[startsWith(ca, "--file=")])
@@ -37,7 +36,7 @@ if (!is.null(script_path)) {
 source(file.path("src", "prong1", "prepare_input.R"))
 source(file.path("src", "prong1", "trajectories.R"))
 
-cfg <- prong1_load_config()
+cfg <- prong1_load_config(config_path = opt$config)
 p1 <- cfg$prong1
 root <- cfg$project_root
 
@@ -48,7 +47,6 @@ output_dir <- prong1_resolve_path(
   if (!is.null(opt$output_dir)) opt$output_dir else p1$output_dir, root
 )
 
-# Fail fast if prep step was skipped / incomplete.
 required <- c("participants.rds", "diagnoses_earliest.rds", "disease_n_patient.tsv")
 missing <- required[!file.exists(file.path(prepared_dir, required))]
 if (length(missing) > 0) {
@@ -59,7 +57,6 @@ if (length(missing) > 0) {
   )
 }
 
-# All analysis thresholds come from config$prong1.
 prong1_run_trajectories(
   prepared_dir = prepared_dir,
   output_dir = output_dir,

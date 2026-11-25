@@ -60,9 +60,9 @@ The dummy generator writes different names on purpose:
 
 ## Converting disease names or local codes to ICD-10 level 3
 
-Many EHRs store free-text condition names, SNOMED CT, ICPC-2, or vendor codes instead of ICD-10. Prong 1 does not map terminology for you. Fill `icd10` in your diagnoses table (or join a map) before `scripts/01_prepare_prong1_input.R`.
+Many EHRs store free-text condition names, SNOMED CT, ICPC-2, or vendor codes instead of ICD-10. Fill a real ICD-10 column before `scripts/01_prepare_prong1_input.R` using `scripts/profile_ehr_inputs.R` (template) and `scripts/00b_map_diagnoses.R` (JSON mapping with `confirmed` flags).
 
-**What “level 3” means here.** One letter plus two digits (chapter + category), e.g. `I10`, `E11`, `C34`. Longer codes are fine in the CSV; the prep step truncates them.
+**What “level 3” means here.** One letter plus two digits (`^[A-Z][0-9]{2}`), e.g. `I10`, `E11`, `C34`. Longer/dotted codes are fine; prep keeps the first three **only if** they match that pattern. Free text is dropped as bad ICD (not truncated to `PEN`/`NOT`).
 
 ### Practical options
 
@@ -75,20 +75,20 @@ Many EHRs store free-text condition names, SNOMED CT, ICPC-2, or vendor codes in
 3. **ICPC-2 or similar GP coding**
 
    Use a published ICPC ↔ ICD map for your country edition, then truncate to level 3. Coverage is incomplete for some symptoms; leave unmapped rows out or review them by hand.
-4. **Free-text disease names only**
-   - **Curated lookup:** build a small table of the most frequent strings in your extract → ICD-10 level 3 (spreadsheet or YAML). Good for a short list of cancers and comorbidities.  
-   - **Dictionary + string match:** normalize case/punctuation and match against WHO ICD-10 titles or a clinical synonym list; keep only high-confidence exact or near-exact hits.  
-   - **Clinical NLP:** tools such as MedCAT, cTAKES, or similar concept-linking pipelines can assign SNOMED or ICD codes to narrative text; always review a sample and keep a confidence threshold.  
-   - **Do not** pass raw free text as `icd10`. Three-character truncation of English words is not a valid disease code.
-5. **Hybrid (recommended for research extracts)**
-
-   Map coded fields first (SNOMED / ICPC). For remaining high-frequency free-text strings, add a manual table. Drop or flag the long tail until reviewed.
+4. **Free-text / local codes via editable JSON (recommended)**
+   - Run `scripts/profile_ehr_inputs.R --write-icd-template icd10_mapping.json`.
+   - Fill `icd10`, `method`, `notes`; leave `confirmed: false` until a human reviews.
+   - Apply with `scripts/00b_map_diagnoses.R` (use `--require-confirmed` after review).
+   - Point the column map’s `diagnoses.icd10` at the mapped column (e.g. `icd10_mapped`).
+   - Crosswalk tools or agents may propose codes, but must write JSON and warn until confirmed.
+5. **Do not** pass raw free text as `icd10`. Invalid strings are dropped, not truncated.
 
 ### After mapping
 
-- Keep the original text or local code in extra columns if you like; the column map only needs to point `icd10` at the ICD field.  
+- Keep the original text or local code in extra columns; the column map only needs to point `icd10` at the ICD field.  
 - Optional `disease_dictionary` can attach human-readable labels to level-3 codes.  
-- Re-run script `01` and check `prep_report.json` (`n_diag_dropped_bad_icd`, disease counts) before trajectories.
+- Re-run script `01` and check `prep_report.json` (drop counters, date QC, `n_unconfirmed_icd_mappings`) before trajectories.  
+- Dates may be `YYYY-MM-DD` or `DD/MM/YYYY` (also `YYYY/MM/DD`); all of `baseline_date`, `diagnosis_date`, `death_date`, and `lost_to_followup_date` are QC’d.
 
 ## Analysis parameters
 

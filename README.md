@@ -71,16 +71,15 @@ Gold maps for grading only: [`tests/fixtures/dummy_dirty_solution/`](tests/fixtu
 
 Each script accepts `--help` for its flags. Omitted path flags fall back to `config/config.yaml`.
 
-### Explore MatchIt neighbours (optional)
-
-After step `01`, open a Shiny app that runs the same nearest-neighbour match as the pipeline and shows the controls chosen for one exposed patient:
+### Profile / map dirty diagnoses (optional)
 
 ```bash
-Rscript --vanilla -e 'install.packages("shiny", repos="https://cloud.r-project.org")'
-Rscript --vanilla -e 'shiny::runApp("apps/match_explorer")'
+Rscript --vanilla scripts/profile_ehr_inputs.R --participants … --diagnoses … --write-icd-template icd10_mapping.json
+Rscript --vanilla scripts/00b_map_diagnoses.R --diagnoses … --dx-col … --lookup icd10_mapping.json --output …_mapped.csv
+Rscript --vanilla scripts/verify_prong1_run.R --expect-seed42
 ```
 
-Pick a D1, filter by sex / age band / centre / year, select a patient, then click **Run match**.
+The Match explorer Shiny app is not part of the published package tree; use the scripts above for QC.
 
 ### Expected outputs
 
@@ -150,11 +149,11 @@ To embed this package in a larger framework (submodule or copy), see [`docs/vend
 
 ```text
 config/          config.yaml + column map
-scripts/         env check + 00–03 runnable steps
-apps/            optional Shiny MatchIt explorer
+scripts/         env check, profile, 00/00b–03, verify
 src/prong1/      helpers (prep, trajectories, dummy, plot)
 docs/            input-schema reference and vendoring
 skills/          Prong 1 agent skill (versioned; ships with the package)
+AGENTS.md        pointer to the agent skill
 data/raw/dummy/  generated demo CSVs (recreate with script 00)
 data/processed/  pipeline outputs
 reports/figures/ bubble plot

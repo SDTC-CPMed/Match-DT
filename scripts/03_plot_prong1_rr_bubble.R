@@ -6,8 +6,9 @@
 
 suppressPackageStartupMessages(library(optparse))
 
-# Optional CLI: --input, --output-png, --output-pdf.
 option_list <- list(
+  make_option("--config", type = "character", default = NULL,
+              help = "Config YAML (default: config/config.yaml)"),
   make_option("--input", type = "character", default = NULL,
               help = "Final_trajectories.csv (default: analysis output dir)"),
   make_option("--output-png", type = "character", default = NULL,
@@ -16,7 +17,6 @@ option_list <- list(
               help = "PDF path (default: reports/figures/prong1_rr_vs_years_bubble.pdf)")
 )
 
-# convert_hyphens_to_underscores: --output-png becomes opt$output_png.
 opt <- parse_args(
   OptionParser(
     usage = "Rscript --vanilla scripts/03_plot_prong1_rr_bubble.R [options]",
@@ -26,7 +26,6 @@ opt <- parse_args(
   convert_hyphens_to_underscores = TRUE
 )
 
-# When launched via Rscript, cd to the repo root (parent of scripts/).
 script_path <- local({
   ca <- commandArgs(trailingOnly = FALSE)
   f <- sub("^--file=", "", ca[startsWith(ca, "--file=")])
@@ -39,12 +38,11 @@ if (!is.null(script_path)) {
 source(file.path("src", "prong1", "prepare_input.R"))
 source(file.path("src", "prong1", "plot_bubble.R"))
 
-cfg <- prong1_load_config()
+cfg <- prong1_load_config(config_path = opt$config)
 root <- cfg$project_root
 p1 <- cfg$prong1
 plot_cfg <- cfg$plot
 
-# Defaults: Final_trajectories.csv from analysis output, figures under reports/.
 finals_path <- prong1_resolve_path(
   if (!is.null(opt$input)) opt$input else file.path(p1$output_dir, "Final_trajectories.csv"),
   root
@@ -57,6 +55,10 @@ output_pdf <- prong1_resolve_path(
   if (!is.null(opt$output_pdf)) opt$output_pdf else "reports/figures/prong1_rr_vs_years_bubble.pdf",
   root
 )
+
+if (!file.exists(finals_path)) {
+  stop("Final trajectories file not found: ", finals_path, ". Run script 02 first.")
+}
 
 prong1_plot_rr_bubble(
   finals_path = finals_path,

@@ -2,15 +2,17 @@
 
 | Issue | Fix |
 |-------|-----|
-| `ENV READY: NO` / missing packages | `Rscript --vanilla scripts/check_prong1_env.R --install` |
-| R too old | Upgrade to R ≥ 4.2 |
-| Missing project paths | `cd` to EarlyT_Prong1 root (has `README.md`, `scripts/`, `config/`) |
-| `renv` / package weirdness | Use `Rscript --vanilla …` |
-| `Prepared inputs missing` | Run `01` before `02`; check `prepared_dir` |
-| Prep drops many rows | Check sex/age/baseline/centre/ethnicity non-missing; fix date parse and column map |
-| `n_diag_dropped_bad_icd` high | Diagnoses are free text or invalid; map to ICD-10 level-3 first |
-| Empty `Final_trajectories.csv` | Confirm planted/demo or real signals; thresholds not raised above biobank defaults; `disease_oi` codes present |
-| Matching failed for one pair | Log and continue; other pairs still process |
-| Match explorer slow / huge select | Use 50k prepared dir; app uses server-side selectize for `focal_id` |
-| Dirty fixture won't prep | Derive column map + name→ICD lookup; do not open `tests/fixtures/dummy_dirty_solution/` unless grading |
-| Only disease subsets, no clinic | Cannot build unbiased controls; obtain full clinic or document limitation |
+| `ENV READY: NO` / missing packages | `check_prong1_env.R --install`; check macOS PATH (`/opt/homebrew/bin`) |
+| `Rscript: command not found` | Export Homebrew PATH or use absolute `Rscript` |
+| Column-map file not found | Pass a real `--column-map` path; no silent fallback when path is set |
+| Missing mapped columns | Error lists table name, expected vs found headers; `;` files → convert to CSV |
+| Unparseable / year `0014` dates | Mixed formats must use explicit ISO/DMY parsing (fixed in prep); re-run `01` |
+| `n_diag_dropped_bad_icd` high / fake `PEN`/`NOT` | Free text was truncated; use `profile_ehr_inputs.R` + `00b_map_diagnoses.R` JSON |
+| `READY: NO` exit 1 | Read drop counters + samples in checklist; fix map/ICD JSON |
+| HUMAN REVIEW REQUIRED | Edit `icd10_mapping.json`, set `confirmed: true`, re-run `00b` (optionally `--require-confirmed`) |
+| Orphan diagnoses | ID mismatch (`P00001` vs `1`); align person_id columns |
+| Dictionary `5/22` codes | Incomplete dictionary — OK, names fall back to ICD |
+| Age &lt; 30 / MatchIt NA | Age bands include `20-` / `20-29`; rebuild prepared inputs |
+| FUNNEL STOP: 0 pairs | Read funnel line (n_patient_min / disease_oi / min_comorbid_overlap / FDR) |
+| Empty Final_trajectories / plot fails | No directed hits; check funnel FDR thresholds |
+| Dirty fixture grading | Only open `tests/fixtures/dummy_dirty_solution/` if asked to grade |
