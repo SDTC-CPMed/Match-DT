@@ -1,6 +1,6 @@
 # Dirty dummy — gold solution (grading only)
 
-Agents working the Prong 1 skill should **derive** maps from `data/raw/dummy_dirty/` without reading this folder unless asked to grade.
+Agents working the Match-DT skill should **derive** maps from `data/raw/dummy_dirty/` without reading this folder unless asked to grade.
 
 ## Files
 

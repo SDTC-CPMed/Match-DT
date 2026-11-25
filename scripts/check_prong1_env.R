@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-# Preflight check for Prong 1: R version, packages, and key project paths.
+# Preflight check for Match-DT: R version, packages, and key project paths.
 #
 # Usage (from project root):
 #   Rscript --vanilla scripts/check_prong1_env.R
@@ -23,7 +23,7 @@ if (has_optparse) {
   opt <- optparse::parse_args(
     optparse::OptionParser(
       usage = "Rscript --vanilla scripts/check_prong1_env.R [options]",
-      description = "Check R version, packages, and Prong 1 project paths.",
+      description = "Check R version, packages, and Match-DT project paths.",
       option_list = option_list
     )
   )
@@ -59,7 +59,7 @@ required_paths <- c(
   "src/prong1/trajectories.R",
   "src/prong1/generate_dummy.R",
   "src/prong1/plot_bubble.R",
-  "skills/prong1-trajectories/SKILL.md"
+  "skills/match-dt-trajectories/SKILL.md"
 )
 
 ok <- TRUE
@@ -126,7 +126,7 @@ if (length(missing_paths) > 0) {
   issues <- c(issues, paste0("Missing paths: ", paste(missing_paths, collapse = ", ")))
   message("Missing project paths:")
   for (p in missing_paths) message("  - ", p)
-  message("  FAIL: run from EarlyT_Prong1 project root")
+  message("  FAIL: run from Match-DT project root")
 } else {
   message("Project paths: OK")
 }

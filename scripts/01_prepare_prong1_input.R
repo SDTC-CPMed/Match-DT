@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-# Prepare generic EHR tables for Prong 1 trajectory analysis.
+# Prepare generic EHR tables for Match-DT trajectory analysis.
 #
 # Usage (from project root):
 #   Rscript --vanilla scripts/01_prepare_prong1_input.R --help
@@ -26,7 +26,7 @@ option_list <- list(
 opt <- parse_args(
   OptionParser(
     usage = "Rscript --vanilla scripts/01_prepare_prong1_input.R [options]",
-    description = "Prepare generic EHR tables for Prong 1 trajectory analysis.",
+    description = "Prepare generic EHR tables for Match-DT trajectory analysis.",
     option_list = option_list
   ),
   convert_hyphens_to_underscores = TRUE

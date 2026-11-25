@@ -1,8 +1,10 @@
-# EarlyT Prong 1 — cancer trajectories pipeline
+# Match-DT — Matched Analysis of Temporal Disease Trajectories
 
-Self-contained **R** tutorial for Prong 1: turn EHR-style tables into disease→cancer relative-risk trajectories and a bubble plot of **log2(RR) vs mean lag years**.
+**Match-DT** (Matched Analysis of Temporal Disease Trajectories) is a statistically based algorithm that can be applied to EHRs of different sizes and types. This repo is a self-contained **R** tutorial: turn EHR-style tables into disease→cancer relative-risk trajectories and a bubble plot of **log2(RR) vs mean lag years**.
 
 This project is intentionally small. It does **not** include the original UK Biobank extract or the full TWIN-MAP monorepo — only what you need to learn and rerun the method on your own data.
+
+When embedded in a parent framework, this package lives as a top-level **`Match-DT/`** folder.
 
 ## If you received a zip archive
 
@@ -66,7 +68,7 @@ Rscript --vanilla scripts/00_generate_dummy_data.R --seed 42 --n 50000 --dirty
 
 Gold maps for grading only: [`tests/fixtures/dummy_dirty_solution/`](tests/fixtures/dummy_dirty_solution/).
 
-**Agent skill (included in this repo):** [`skills/prong1-trajectories/`](skills/prong1-trajectories/) — agent-agnostic instructions so any coding agent can run or guide env check → prep → trajectories → plot. A symlink under `.cursor/skills/` is only for Cursor discovery.
+**Agent skill (included in this repo):** [`skills/match-dt-trajectories/`](skills/match-dt-trajectories/) — agent-agnostic instructions so any coding agent can run or guide env check → prep → trajectories → plot. A symlink under `.cursor/skills/` is only for Cursor discovery.
 
 
 Each script accepts `--help` for its flags. Omitted path flags fall back to `config/config.yaml`.
@@ -143,7 +145,7 @@ Mean lag on the plot uses only directed (D2 after D1) cases.
 
 ## Vendoring
 
-To embed this package in a larger framework (submodule or copy), see [`docs/vendoring.md`](docs/vendoring.md).
+To embed this package in a larger framework as `Match-DT/` (submodule or copy), see [`docs/vendoring.md`](docs/vendoring.md).
 
 ## Repository layout
 
@@ -152,7 +154,7 @@ config/          config.yaml + column map
 scripts/         env check, profile, 00/00b–03, verify
 src/prong1/      helpers (prep, trajectories, dummy, plot)
 docs/            input-schema reference and vendoring
-skills/          Prong 1 agent skill (versioned; ships with the package)
+skills/          Match-DT agent skill (versioned; ships with the package)
 AGENTS.md        pointer to the agent skill
 data/raw/dummy/  generated demo CSVs (recreate with script 00)
 data/processed/  pipeline outputs

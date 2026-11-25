@@ -1,4 +1,4 @@
-# Prong 1 input schema (reference)
+# Match-DT input schema (reference)
 
 Transform an EHR extract into two tables (plus an optional dictionary), then run the numbered scripts in this repository. The educational demo uses **non-canonical column names** mapped via [`config/prong1_column_map.yaml`](../config/prong1_column_map.yaml).
 

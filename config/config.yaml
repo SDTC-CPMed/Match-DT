@@ -9,7 +9,7 @@ plot:
   bubble_height: 7
   dpi: 300
 
-# Generic Prong 1 EHR trajectory pipeline (cohort-agnostic).
+# Match-DT (Matched Analysis of Temporal Disease Trajectories) — cohort-agnostic.
 # Paths are relative to the project root unless absolute.
 prong1:
   participants_file: data/raw/dummy/participants.csv

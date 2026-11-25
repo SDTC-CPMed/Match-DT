@@ -1,4 +1,4 @@
-# Prong 1 generic EHR input preparation helpers.
+# Match-DT generic EHR input preparation helpers.
 # Canonical schema: participants + long diagnoses (+ optional disease dictionary).
 
 suppressPackageStartupMessages({
@@ -289,7 +289,7 @@ prong1_load_icd_map_json <- function(path) {
 
 `%||%` <- function(a, b) if (is.null(a)) b else a
 
-#' Prepare Prong 1 analysis-ready tables from generic EHR inputs.
+#' Prepare Match-DT analysis-ready tables from generic EHR inputs.
 #'
 #' @return list(participants, diagnoses, disease_n_patient, report)
 prong1_prepare_input <- function(
@@ -599,7 +599,7 @@ prong1_prepare_input <- function(
 
 # Console checklist so the next pipeline step is obvious.
 prong1_print_prep_checklist <- function(report, output_dir) {
-  message("Prong 1 prep checklist")
+  message("Match-DT prep checklist")
   message("  participants: ", report$n_participants_in, " -> ", report$n_participants_out)
   message("  diagnoses (earliest person x ICD): ", report$n_diagnoses_earliest_out)
   message("  diseases: ", report$n_diseases,

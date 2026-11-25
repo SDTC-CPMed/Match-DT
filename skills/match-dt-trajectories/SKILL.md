@@ -1,16 +1,17 @@
 ---
-name: prong1-trajectories
+name: match-dt-trajectories
 description: >-
-  Runs or guides the EarlyT Prong 1 disease→cancer trajectory pipeline:
-  environment check, EHR profiling, column maps, ICD-10 JSON mapping with
-  human confirmation, MatchIt RR, directionality, and bubble plots. Use for
-  Prong 1, trajectories, MatchIt RR, column maps, dummy/dirty EHR, ICD mapping
-  JSON, scripts 00–03 / 00b / profile / verify, or env setup.
+  Runs or guides the Match-DT (Matched Analysis of Temporal Disease
+  Trajectories) disease→cancer pipeline: environment check, EHR profiling,
+  column maps, ICD-10 JSON mapping with human confirmation, MatchIt RR,
+  directionality, and bubble plots. Use for Match-DT, trajectories, MatchIt RR,
+  column maps, dummy/dirty EHR, ICD mapping JSON, scripts 00–03 / 00b / profile /
+  verify, or env setup.
 ---
 
-# Prong 1 trajectories
+# Match-DT trajectories
 
-Self-contained R pipeline in this repo. Prefer `Rscript --vanilla` from the project root.
+**Match-DT** (Matched Analysis of Temporal Disease Trajectories) is a statistically based algorithm for EHRs of different sizes and types. Self-contained R pipeline in this repo. Prefer `Rscript --vanilla` from the project root (folder named `Match-DT` when vendored).
 
 ## Mode
 
@@ -101,5 +102,5 @@ Never pass free text as `icd10` into `01`. Never invent UKBB clinic tables.
 - **Env first.** Do not run `02`/`03` until `ENV READY: YES`.
 - Prefer ~50k for agent tests; warn before MatchIt on ~500k.
 - Dirty raw under `data/raw/dummy_dirty/`: **derive** maps yourself. Open `tests/fixtures/dummy_dirty_solution/` only if the user asks to grade.
-- This skill is agent-agnostic (`skills/prong1-trajectories/`).
+- This skill is agent-agnostic (`skills/match-dt-trajectories/`).
 - Detail: [reference-env.md](reference-env.md), [reference-schema.md](reference-schema.md), [reference-config.md](reference-config.md), [troubleshooting.md](troubleshooting.md).

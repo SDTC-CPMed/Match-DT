@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-# Run Prong 1 prefilter → matched RR → directionality.
+# Run Match-DT prefilter → matched RR → directionality.
 #
 # Usage (from project root):
 #   Rscript --vanilla scripts/02_run_prong1_trajectories.R --help
@@ -18,7 +18,7 @@ option_list <- list(
 opt <- parse_args(
   OptionParser(
     usage = "Rscript --vanilla scripts/02_run_prong1_trajectories.R [options]",
-    description = "Run Prong 1 prefilter, matched relative risk, and directionality.",
+    description = "Run Match-DT prefilter, matched relative risk, and directionality.",
     option_list = option_list
   ),
   convert_hyphens_to_underscores = TRUE

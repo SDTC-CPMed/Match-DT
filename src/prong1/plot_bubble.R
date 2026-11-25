@@ -1,4 +1,4 @@
-# RR vs mean directed lag bubble plot for Prong 1 finals.
+# RR vs mean directed lag bubble plot for Match-DT finals.
 
 suppressPackageStartupMessages({
   library(dplyr)
@@ -77,7 +77,7 @@ prong1_plot_rr_bubble <- function(
       x = "Mean time D2 - D1 (years)",
       y = "Relative risk (log2)",
       color = NULL,
-      title = "Prong 1 directed trajectories"
+      title = "Match-DT directed trajectories"
     ) +
     theme_classic(base_size = 12, base_family = "sans") +
     theme(panel.grid.minor = element_blank(), legend.position = "bottom")

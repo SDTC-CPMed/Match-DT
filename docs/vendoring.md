@@ -1,26 +1,26 @@
-# Vendoring EarlyT_Prong1 into a parent framework
+# Vendoring Match-DT into a parent framework
 
-This repository is self-contained. A future parent framework can consume it as a **git submodule** or a copied tree under e.g. `vendor/EarlyT_Prong1` / `packages/EarlyT_Prong1`.
+This repository is self-contained. A parent framework should consume it as a **git submodule** or copied tree named **`Match-DT`** at the parent root (or under e.g. `packages/Match-DT`).
 
 ## Layout
 
 ```text
 parent-framework/
-  vendor/EarlyT_Prong1/    # this repo (submodule or copy)
+  Match-DT/                 # this repo (submodule or copy)
     config/
     scripts/
     src/prong1/
-    data/                  # stays inside the vendored tree
+    data/                   # stays inside the Match-DT tree
     reports/
-    skills/prong1-trajectories/
+    skills/match-dt-trajectories/
 ```
 
-Run all Rscripts with working directory = the vendored project root (the folder that contains this repo’s `README.md`).
+Run all Rscripts with working directory = the Match-DT project root (the folder that contains this repo’s `README.md`).
 
 ## First step: environment
 
 ```bash
-cd vendor/EarlyT_Prong1
+cd Match-DT
 Rscript --vanilla scripts/check_prong1_env.R
 # if needed:
 Rscript --vanilla scripts/check_prong1_env.R --install
@@ -30,15 +30,15 @@ Required R ≥ 4.2 and packages: `dplyr`, `readr`, `yaml`, `jsonlite`, `stringr`
 
 ## Paths
 
-Override `prong1:` in `config/config.yaml` or pass CLI flags to scripts `01`–`03` so raw EHR and outputs live where the parent prefers. Keep Match explorer and generated `data/` inside the vendored tree unless you intentionally re-point `prepared_dir` / `output_dir`.
+Override `prong1:` in `config/config.yaml` or pass CLI flags to scripts `01`–`03` so raw EHR and outputs live where the parent prefers. Keep Match explorer and generated `data/` inside the Match-DT tree unless you intentionally re-point `prepared_dir` / `output_dir`.
 
 ## Agent skill (ships with this package)
 
-The Prong 1 skill is **agent-agnostic** and versioned at [`skills/prong1-trajectories/`](../skills/prong1-trajectories/). Cloning or vendoring this tree includes it; no separate install step.
+The Match-DT skill is **agent-agnostic** and versioned at [`skills/match-dt-trajectories/`](../skills/match-dt-trajectories/). Cloning or vendoring this tree includes it; no separate install step.
 
-Point any coding agent at that directory (or `@skills/prong1-trajectories/SKILL.md`). The optional symlink `.cursor/skills/prong1-trajectories` exists only so Cursor can auto-discover the same files.
+Point any coding agent at that directory (or `@skills/match-dt-trajectories/SKILL.md`). The optional symlink `.cursor/skills/match-dt-trajectories` exists only so Cursor can auto-discover the same files.
 
 ## Do not
 
-- Rewrite Prong 1 scripts to assume the parent’s monorepo layout without updating config.
+- Rewrite Match-DT scripts to assume the parent’s monorepo layout without updating config.
 - Expect UK Biobank clinic extracts to ship inside this package.

@@ -143,10 +143,10 @@ A **clone** creates a local folder with all project files and Git history.
 cd ~/Documents
 
 # Download the repository
-git clone https://github.com/gabdeevmaksim/EarlyT_Prong1.git
+git clone https://github.com/gabdeevmaksim/Match-DT.git
 
 # Enter the project
-cd EarlyT_Prong1
+cd Match-DT
 ```
 
 You should see files such as `README.md`, `scripts/`, `config/`, and `src/`.
@@ -155,17 +155,17 @@ You should see files such as `README.md`, `scripts/`, `config/`, and `src/`.
 
 You can also download a ZIP from GitHub:
 
-1. Open [https://github.com/gabdeevmaksim/EarlyT_Prong1](https://github.com/gabdeevmaksim/EarlyT_Prong1).
+1. Open [https://github.com/gabdeevmaksim/Match-DT](https://github.com/gabdeevmaksim/Match-DT).
 2. Click the green **Code** button → **Download ZIP**.
 3. Unzip the archive.
-4. In the terminal, `cd` into the unzipped folder (name may be `EarlyT_Prong1-main`).
+4. In the terminal, `cd` into the unzipped folder (name may be `Match-DT-main`).
 
 Git clone is preferred so you can later run `git pull` to update.
 
 ### Optional: update an existing clone later
 
 ```bash
-cd ~/Documents/EarlyT_Prong1
+cd ~/Documents/Match-DT
 git pull
 ```
 
@@ -173,7 +173,7 @@ git pull
 
 ## 5. Install R packages used by this project
 
-Still inside the project folder (`EarlyT_Prong1`):
+Still inside the project folder (`Match-DT`):
 
 ```bash
 Rscript --vanilla -e 'install.packages(c("dplyr","readr","yaml","jsonlite","stringr","MatchIt","ggplot2","ggrepel"), repos="https://cloud.r-project.org")'
@@ -188,7 +188,7 @@ On first install this may take several minutes. When it finishes without errors,
 From the project root:
 
 ```bash
-pwd          # should end with .../EarlyT_Prong1
+pwd          # should end with .../Match-DT
 ls README.md scripts config
 Rscript --vanilla -e 'packageVersion("MatchIt"); packageVersion("ggplot2")'
 ```

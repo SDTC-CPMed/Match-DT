@@ -1,4 +1,4 @@
-# Prong 1 trajectory statistics on generic prepared tables.
+# Match-DT trajectory statistics on generic prepared tables.
 # Logic mirrors UKBB ICD10level3 scripts 3–4 (prefilter, matched RR, directionality).
 
 suppressPackageStartupMessages({

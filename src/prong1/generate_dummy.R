@@ -1,4 +1,4 @@
-# Seeded synthetic EHR for Prong 1 educational demos.
+# Seeded synthetic EHR for Match-DT educational demos.
 # Uses non-canonical column names; pair with config/prong1_column_map.yaml.
 
 suppressPackageStartupMessages({
