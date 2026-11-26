@@ -4,7 +4,7 @@
 
 This project is intentionally small. It does **not** include the original UK Biobank extract or the full TWIN-MAP monorepo — only what you need to learn and rerun the method on your own data.
 
-When embedded in a parent framework, this package lives as a top-level **`Match-DT/`** folder.
+When embedded in a parent framework, this package lives as a top-level `Match-DT/` folder.
 
 ## If you received a zip archive
 
@@ -19,7 +19,7 @@ When embedded in a parent framework, this package lives as a top-level **`Match-
 00 generate dummy EHR  →  01 prepare/validate  →  02 RR + directionality  →  03 bubble plot
 ```
 
-Dummy CSVs play the role of an EHR and use **non-default column names** on purpose. [`config/prong1_column_map.yaml`](config/prong1_column_map.yaml) shows how to remap them to the canonical schema.
+Dummy CSVs play the role of an EHR and use different column names on purpose. The scripts always use a fixed set of canonical fields. [`config/prong1_column_map.yaml`](config/prong1_column_map.yaml) connects your headers to those fields: each key is a canonical name, and each value is the column name in your file. If your EHR already has the required fields under other names, edit those values, you do not need to rename the column names in your file the script will do that. 
 
 ## Requirements
 
@@ -68,8 +68,7 @@ Rscript --vanilla scripts/00_generate_dummy_data.R --seed 42 --n 50000 --dirty
 
 Gold maps for grading only: [`tests/fixtures/dummy_dirty_solution/`](tests/fixtures/dummy_dirty_solution/).
 
-**Agent skill (included in this repo):** [`skills/match-dt-trajectories/`](skills/match-dt-trajectories/) — agent-agnostic instructions so any coding agent can run or guide env check → prep → trajectories → plot. A symlink under `.cursor/skills/` is only for Cursor discovery.
-
+**Agent skill (included in this repo):** [`skills/match-dt-trajectories/`](skills/match-dt-trajectories/) — agent-agnostic instructions so any coding agent can run or guide env check → prep → trajectories → plot. 
 
 Each script accepts `--help` for its flags. Omitted path flags fall back to `config/config.yaml`.
 
@@ -80,8 +79,6 @@ Rscript --vanilla scripts/profile_ehr_inputs.R --participants … --diagnoses �
 Rscript --vanilla scripts/00b_map_diagnoses.R --diagnoses … --dx-col … --lookup icd10_mapping.json --output …_mapped.csv
 Rscript --vanilla scripts/verify_prong1_run.R --expect-seed42
 ```
-
-The Match explorer Shiny app is not part of the published package tree; use the scripts above for QC.
 
 ### Expected outputs
 
@@ -97,9 +94,9 @@ With `--seed 42` and default config (`n_patient_min: 100`, `min_comorbid_overlap
 
 Regenerating with the same seed yields identical CSVs (same checksums).
 
-## Column mapping lesson
+## Column mapping
 
-Canonical fields (what the analysis code expects) differ from the dummy export:
+The keys below are the canonical fields the scripts use after loading. The values are whatever those columns are called in the input file. This table is the demo map for the dummy CSVs. For your own extract, edit [`config/prong1_column_map.yaml`](config/prong1_column_map.yaml) and replace each dummy header with yours. If your headers are already the canonical names, remove `column_map_file` from [`config/config.yaml`](config/config.yaml).
 
 | Canonical | Dummy column |
 |-----------|----------------|
@@ -114,9 +111,9 @@ Canonical fields (what the analysis code expects) differ from the dummy export:
 | `icd10` | `diagnosis_code` |
 | `diagnosis_date` | `onset_date` |
 
-Edit [`config/prong1_column_map.yaml`](config/prong1_column_map.yaml) when pointing the pipeline at real EHR extracts. Schema details: [`docs/prong1_input_preparation.md`](docs/prong1_input_preparation.md).
+Field types and the rest of the schema are in [`docs/prong1_input_preparation.md`](docs/prong1_input_preparation.md).
 
-If your EHR uses disease **names**, SNOMED, or other local codes instead of ICD-10, map them to ICD-10 level 3 **before** script `01`. See [*Converting disease names or local codes to ICD-10 level 3*](docs/prong1_input_preparation.md#converting-disease-names-or-local-codes-to-icd-10-level-3) in that doc.
+If a diagnosis column contains disease names, SNOMED, or other local codes instead of ICD-10, convert those values to ICD-10 level 3 before script `01`. The steps are in that same file, section [Converting disease names or local codes to ICD-10 level 3](docs/prong1_input_preparation.md#converting-disease-names-or-local-codes-to-icd-10-level-3). The scripts it tells you to run are [`scripts/profile_ehr_inputs.R`](scripts/profile_ehr_inputs.R) and [`scripts/00b_map_diagnoses.R`](scripts/00b_map_diagnoses.R).
 
 ## Configuration
 

@@ -16,7 +16,7 @@ Full narrative: [`docs/prong1_input_preparation.md`](../../docs/prong1_input_pre
 |--------|------|------|
 | `person_id` | string | Join key |
 | `sex` | string/int | Matching (`male`/`female`, `M`/`F`, `1`/`0`) |
-| `age_at_baseline` | numeric | Age bands |
+| `age_at_baseline` | numeric | Age in years (for example 21 or 67). Matching uses a band derived from this number. |
 | `baseline_date` | date `YYYY-MM-DD` | Year + follow-up start |
 | `assessment_centre` | string | Matching |
 | `ethnicity` | string | Non-missing filter |
@@ -46,6 +46,8 @@ Age bands for matching include `20-`, `20-29`, `30-39`, …, `70+`.
 
 ## Column-map YAML shape
 
+Keys stay canonical. Each value is the column name in the user's file, not a name they must rename their CSV to. The checked-in demo map is [`config/prong1_column_map.yaml`](../../config/prong1_column_map.yaml). Omit the map when the file already uses the canonical names.
+
 ```yaml
 participants:
   person_id: <source_col>
@@ -66,8 +68,6 @@ disease_dictionary:
   icd10: <source_col>
   disease_name: <source_col>
 ```
-
-Clean dummy map: [`config/prong1_column_map.yaml`](../../config/prong1_column_map.yaml).
 
 ## ICD / free-text
 

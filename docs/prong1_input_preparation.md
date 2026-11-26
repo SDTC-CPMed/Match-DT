@@ -1,6 +1,6 @@
 # Match-DT input schema (reference)
 
-Transform an EHR extract into two tables (plus an optional dictionary), then run the numbered scripts in this repository. The educational demo uses **non-canonical column names** mapped via [`config/prong1_column_map.yaml`](../config/prong1_column_map.yaml).
+Transform an EHR extract into two tables (plus an optional dictionary), then run the numbered scripts in this repository. The scripts rename your columns to the canonical fields below. In the column map, each key is a canonical field and each value is the header in your file. [`config/prong1_column_map.yaml`](../config/prong1_column_map.yaml) is the demo map for the dummy CSVs. For your own extract, copy it and change the values. If your headers are already the canonical names, omit the map.
 
 ## Why two tables
 
@@ -12,16 +12,16 @@ Transform an EHR extract into two tables (plus an optional dictionary), then run
 
 ### Participants
 
-| Canonical column | Type | Role |
-|------------------|------|------|
-| `person_id` | string | Join key |
-| `sex` | string/int | Matching (`male`/`female`, `M`/`F`, `1`/`0`) |
-| `age_at_baseline` | numeric | Age bands for matching |
-| `baseline_date` | date `YYYY-MM-DD` | Assessment year + follow-up start |
-| `assessment_centre` | string | Matching |
-| `ethnicity` | string | Non-missing filter |
-| `death_date` | date or empty | Censoring |
-| `lost_to_followup_date` | date or empty | Censoring |
+| Canonical column        | Type              | Role                                         |
+| ----------------------- | ----------------- | -------------------------------------------- |
+| `person_id`             | string            | Join key                                     |
+| `sex`                   | string/int        | Matching (`male`/`female`, `M`/`F`, `1`/`0`) |
+| `age_at_baseline`       | numeric           | Age in years at baseline (for example 21 or 67). Matching uses a band derived from this number. |
+| `baseline_date`         | date `YYYY-MM-DD` | Assessment year + follow-up start            |
+| `assessment_centre`     | string            | Matching                                     |
+| `ethnicity`             | string            | Non-missing filter                           |
+| `death_date`            | date or empty     | Censoring                                    |
+| `lost_to_followup_date` | date or empty     | Censoring                                    |
 
 ### Diagnoses
 

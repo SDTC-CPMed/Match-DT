@@ -5,11 +5,9 @@
 .DS_Store
 
 # Canonical agent skills live under skills/ (versioned).
-# Optional IDE shim: .cursor/skills/match-dt-trajectories → ../../skills/match-dt-trajectories
-# Ignore other local Cursor IDE state if present.
-.cursor/*
-!.cursor/skills/
-!.cursor/skills/match-dt-trajectories
+# Local Cursor IDE state and the optional Match explorer app stay untracked.
+.cursor/
+apps/
 renv/library/
 renv/local/
 renv/cellar/

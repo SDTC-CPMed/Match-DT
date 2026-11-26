@@ -36,7 +36,7 @@ Override `prong1:` in `config/config.yaml` or pass CLI flags to scripts `01`–`
 
 The Match-DT skill is **agent-agnostic** and versioned at [`skills/match-dt-trajectories/`](../skills/match-dt-trajectories/). Cloning or vendoring this tree includes it; no separate install step.
 
-Point any coding agent at that directory (or `@skills/match-dt-trajectories/SKILL.md`). The optional symlink `.cursor/skills/match-dt-trajectories` exists only so Cursor can auto-discover the same files.
+Point any coding agent at that directory (or `@skills/match-dt-trajectories/SKILL.md`). `.cursor/` and `apps/` are local and are not part of this repository.
 
 ## Do not
 
